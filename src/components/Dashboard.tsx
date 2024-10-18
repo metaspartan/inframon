@@ -127,7 +127,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </CardContent>
       </Card> */}
 
-      <div className="col-span-full grid gap-4 sm:grid-cols-2 max-w-full">
+      <div className="col-span-full grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Chart 
           data={data.cpuHistory} 
           timePoints={data.timePoints} 
@@ -164,7 +164,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="B/s"
         /> */}
       </div>
-      <div className="grid col-span-full">
+      <div className="grid col-span-full grid-cols-1 lg:grid-cols-1">
       <Chart 
           data={data.powerHistory} 
           timePoints={data.timePoints} 
