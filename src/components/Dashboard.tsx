@@ -1,16 +1,24 @@
 import { ServerData } from '@/types';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CpuIcon, HardDriveIcon, ZapIcon, WifiIcon, ServerIcon } from 'lucide-react';
+import { CpuIcon, HardDriveIcon, ZapIcon, WifiIcon, ServerIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Chart } from '@/components/ui/chart';
+import { Button } from '@/components/ui/button';
 
 interface DashboardProps {
   data: ServerData;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ data }) => {
+  const [isIpBlurred, setIsIpBlurred] = useState(true);
+
+  const toggleIpBlur = () => {
+    setIsIpBlurred(!isIpBlurred);
+  };
   return (<>
-  <div className="col-span-full mb-4">
+  <div className="w-full max-w-full">
+  <div className="mb-4">
     <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
        <CardTitle className="text-sm font-medium text-muted-foreground">System Status ({data.uptime})</CardTitle>
@@ -20,7 +28,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
        </CardContent>
     </Card>
     </div>
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-full">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
@@ -70,7 +78,28 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <ServerIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{data.localIp}</div>
+        <div className="flex items-center justify-between">
+            <div className={`text-2xl font-bold ${isIpBlurred ? 'blur-md' : ''}`}>
+              {data.localIp}
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleIpBlur}
+              aria-label={isIpBlurred ? 'Show IP' : 'Hide IP'}
+              className="outline-none focus:outline-none"
+            >
+              {isIpBlurred ? (
+                <div className="flex items-center justify-between">
+                  <EyeIcon className="h-4 w-4 text-white" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <EyeOffIcon className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -98,7 +127,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </CardContent>
       </Card> */}
 
-      <div className="col-span-full grid gap-4 md:grid-cols-2">
+      <div className="col-span-full grid gap-4 sm:grid-cols-2 max-w-full">
         <Chart 
           data={data.cpuHistory} 
           timePoints={data.timePoints} 
@@ -145,7 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         />
       </div>
     </div>
-  </>);
+  </div></>);
 };
 
 export default Dashboard;
