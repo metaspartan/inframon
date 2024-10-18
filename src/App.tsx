@@ -39,6 +39,9 @@ function App() {
               <p className="text-center">Loading server data...</p>
             )}
           </main>
+          <footer className="mt-8 text-center text-sm text-gray-500">
+            <p>Server⚡Monitor</p> By Carsen Klock on <a href="https://github.com/metaspartan/servermon" target="_blank" rel="noopener noreferrer">Github</a>
+          </footer>
         </div>
       </div>
     </ThemeProvider>

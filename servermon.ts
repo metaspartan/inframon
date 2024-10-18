@@ -59,6 +59,12 @@ async function updateHistory() {
 // Update history every second
 setInterval(updateHistory, 1000);
 
+app.get('/api/local-ip', (req, res) => {
+  const localIp = getLocalIp(); // Your existing function to get local IP
+  res.json({ ip: localIp });
+});
+
+
 app.get('/api/server-data', async (req, res) => {
   const [totalMemory, usedMemory, cpuCoreCount] = await Promise.all([
     getTotalMemory(),
