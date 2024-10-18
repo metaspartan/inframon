@@ -29,7 +29,7 @@ function App() {
       <div className="bg-background text-foreground flex items-center justify-center">
         <div className="container mx-auto p-4 max-w-5xl">
           <header className="mb-8 flex justify-between items-center mt-8">
-            <h1 className="text-3xl font-bold">Server⚡Monitor</h1>
+            <h1 className="text-3xl font-bold ml-2">Server⚡Monitor</h1>
             <ModeToggle />
           </header>
           <main>
