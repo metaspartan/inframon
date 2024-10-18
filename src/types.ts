@@ -20,4 +20,9 @@ export interface ServerData {
   systemName: string;
   uptime: string;
   cpuModel: string;
+  storageInfo: {
+    total: number;
+    used: number;
+    available: number;
+  };
 }

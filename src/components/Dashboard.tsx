@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { CpuIcon, HardDriveIcon, ZapIcon, WifiIcon, ServerIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Chart } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
+import { ModeToggle } from '@/components/mode-toggle';
 
 interface DashboardProps {
   data: ServerData;
@@ -17,12 +18,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     setIsIpBlurred(!isIpBlurred);
   };
   return (<>
-  <div className="w-full max-w-full">
+  <div className="w-full max-w-full mt-2">
   <div className="mb-4">
     <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-       <CardTitle className="text-sm font-medium text-muted-foreground">System Status ({data.uptime})</CardTitle>
-       </CardHeader>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-2">
+       <CardTitle className="mt-4 ml-4 text-sm font-medium text-muted-foreground">System Status ({data.uptime})</CardTitle>
+       <ModeToggle />
+    </CardHeader>
        <CardContent>
        <strong>{data.systemName}</strong> with <strong>{data.cpuModel}</strong>
        </CardContent>
@@ -46,7 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
-    <div className="text-2xl font-bold">{data.usedMemory.toFixed(2)}/{data.totalMemory.toFixed(2)} GB</div>
+    <div className="text-2xl font-bold">{data.usedMemory.toFixed(2)} / {data.totalMemory.toFixed(2)} GB</div>
     <Progress value={data.memoryUsage} className="mt-2" />
   </CardContent>
 </Card>
@@ -127,7 +129,25 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </CardContent>
       </Card> */}
 
-      <div className="col-span-full grid gap-4 grid-cols-1 lg:grid-cols-2">
+    </div>
+    <div className="mt-4 grid gap-4 grid-cols-1 mb-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Storage</CardTitle>
+              <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+            <div className="flex justify-between items-center">
+              <div className="text-xl font-bold">{data.storageInfo.used.toFixed(2)} / {data.storageInfo.total.toFixed(2)} GB</div>
+              <span className="text-muted-foreground text-sm font-bold">{data.storageInfo.available.toFixed(2)} GB available</span>
+            </div>
+              <Progress value={(data.storageInfo.used / data.storageInfo.total) * 100} className="mt-2" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-full">
+
+        <div className="col-span-full grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Chart 
           data={data.cpuHistory} 
           timePoints={data.timePoints} 
@@ -173,7 +193,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="W"
         />
       </div>
-    </div>
+
+        </div>
+
+
   </div></>);
 };
 

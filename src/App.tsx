@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
-import { ModeToggle } from '@/components/mode-toggle';
+
 import Dashboard from '@/components/Dashboard';
 import { ServerData } from '@/types';
 import { fetchServerData } from '@/lib/api';
@@ -27,11 +27,11 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <div className="bg-background text-foreground flex items-center justify-center">
-        <div className="container mx-auto p-4 max-w-5xl">
-          <header className="mb-8 flex justify-between items-center mt-8">
+        <div className="container mx-auto p-2 max-w-5xl">
+          {/* <header className="mb-4 flex justify-between items-center mt-4">
             <h1 className="text-3xl font-bold ml-2">Server⚡Monitor</h1>
             <ModeToggle />
-          </header>
+          </header> */}
           <main>
             {serverData ? (
               <Dashboard data={serverData} />
@@ -39,7 +39,7 @@ function App() {
               <p className="text-center">Loading server data...</p>
             )}
           </main>
-          <footer className="mt-8 text-center text-sm text-gray-500">
+          <footer className="mt-4 text-center text-sm text-gray-500">
             <p>Server⚡Monitor</p> By Carsen Klock on <a href="https://github.com/metaspartan/servermon" target="_blank" rel="noopener noreferrer">Github</a>
           </footer>
         </div>

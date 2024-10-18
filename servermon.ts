@@ -14,6 +14,7 @@ import {
   getSystemName,
   getUptime,
   getCpuModel,
+  getStorageInfo,
   isCloudflaredRunning,
 } from './system_info';
 
@@ -96,7 +97,8 @@ app.get('/api/server-data', async (req, res) => {
     cpuCoreCount,
     systemName: await getSystemName(),
     uptime: await getUptime(),
-    cpuModel: await getCpuModel()
+    cpuModel: await getCpuModel(),
+    storageInfo: await getStorageInfo()
   };
 
   res.json(serverData);

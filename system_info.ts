@@ -144,3 +144,33 @@ export async function getCpuModel(): Promise<string> {
     return 'Unknown';
   }
 }
+
+
+export async function getStorageInfo(): Promise<{ total: number; used: number; available: number }> {
+  try {
+    const output = await executeCommand("df -B1 / | tail -1 | awk '{print $2,$3,$4}'");
+    const [total, used, available] = output.split(' ').map(Number);
+    return {
+      total: total / (1024 * 1024 * 1024), // Convert to GB
+      used: used / (1024 * 1024 * 1024),
+      available: available / (1024 * 1024 * 1024)
+    };
+  } catch (error) {
+    console.error('Error getting storage info:', error);
+    return { total: 0, used: 0, available: 0 };
+  }
+}
+
+// export async function getNvmeInfo(): Promise<{ total: number; used: number }> {
+//   try {
+//     const output = await executeCommand("df -B1 /dev/nvme0n1p1 | tail -1 | awk '{print $2,$3}'");
+//     const [total, used] = output.split(' ').map(Number);
+//     return {
+//       total: total / (1024 * 1024 * 1024), // Convert to GB
+//       used: used / (1024 * 1024 * 1024)
+//     };
+//   } catch (error) {
+//     console.error('Error getting NVME info:', error);
+//     return { total: 0, used: 0 };
+//   }
+// }
