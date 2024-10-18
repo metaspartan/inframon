@@ -102,8 +102,10 @@ app.get('/api/server-data', async (req, res) => {
   res.json(serverData);
 });
 
+const localIp = await getLocalIp();
+
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server Monitor server is running on http://${localIp}:${port}`);
 });
 
 // Initial history update
@@ -129,7 +131,7 @@ frontendApp.use((req, res, next) => {
   next();
 });
 
-const FPORT =  FRONTEND_PORT;
+const FPORT = FRONTEND_PORT;
 frontendApp.listen(FPORT, () => {
-  console.log(`Server Monitor frontend is running on port ${FPORT}`);
+  console.log(`Server Monitor is running on http://${localIp}:${FPORT}`);
 });
