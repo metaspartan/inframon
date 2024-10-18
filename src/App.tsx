@@ -19,16 +19,16 @@ function App() {
     };
   
     updateServerData();
-    const interval = setInterval(updateServerData, 5000); // Update every 5 seconds
+    const interval = setInterval(updateServerData, 1000); // Update every 1 seconds
   
     return () => clearInterval(interval);
   }, []);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+      <div className="bg-background text-foreground flex items-center justify-center">
         <div className="container mx-auto p-4 max-w-5xl">
-          <header className="mb-8 flex justify-between items-center">
+          <header className="mb-8 flex justify-between items-center mt-8">
             <h1 className="text-3xl font-bold">Server⚡Monitor</h1>
             <ModeToggle />
           </header>

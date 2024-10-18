@@ -1,0 +1,13 @@
+[Unit]
+Description=Server Monitor Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/bun run /home/ghost/servermon/servermon.ts
+WorkingDirectory=/home/ghost/servermon
+Restart=always
+User=ghost
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
