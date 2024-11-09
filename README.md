@@ -10,9 +10,15 @@ Server⚡Monitor is a lightweight, real-time server monitoring application that 
 - System information display (hostname, CPU model, uptime)
 - Storage usage visualization
 - Historical data charts for CPU, memory, and power usage
-- Light and dark mode support
+- Light and dark mode theme support (Built with Shadcn/UI)
 - Local IP address display (with toggle to show/hide)
 - Cloudflared status indicator
+- GPU usage monitoring for Apple Silicon Macs
+
+## Supported Platforms and Devices
+
+- MacOS (Apple Silicon)
+- Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
 
 ## Installation
 
@@ -66,8 +72,8 @@ Once the service is running, you can access the Server⚡Monitor dashboard by op
 http://your_server_ip:3869
 ```
 
-Replace `your_server_ip` with the actual local network or public IP address of your server.
+Replace `your_server_ip` with the actual local network IP address of your server.
 
 ## Configuration
 
-Edit `lib/api.ts` to change the server's local IP address.
+Edit `lib/api.ts` to change the server's local IP address if having issues and run `bun run build` again.
