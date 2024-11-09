@@ -1,7 +1,7 @@
 import { ServerData } from '@/types';
 
 const API_PORT = 3800;
-const SERVER_IP = '192.168.1.99';
+const SERVER_IP = '192.168.1.250';
 
 export async function fetchServerData(): Promise<ServerData> {
   try {

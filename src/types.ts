@@ -1,5 +1,6 @@
 export interface ServerData {
   cpuUsage: number;
+  gpuUsage: number;
   memoryUsage: number;
   powerUsage: number;
   networkTraffic: {
@@ -10,6 +11,7 @@ export interface ServerData {
   cloudflaredRunning: boolean;
   timePoints: string[];
   cpuHistory: number[];
+  gpuHistory: number[];
   memoryHistory: number[];
   powerHistory: number[];
   networkRxHistory: number[];

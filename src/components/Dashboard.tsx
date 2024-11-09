@@ -17,6 +17,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const toggleIpBlur = () => {
     setIsIpBlurred(!isIpBlurred);
   };
+
+  const isAppleSilicon = (cpuModel: string) => cpuModel.toLowerCase().includes('apple');
+
   return (<>
   <div className="w-full max-w-full mt-2">
   <div className="mb-4">
@@ -33,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-full">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">CPU Usage</CardTitle>
           <CpuIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -44,7 +47,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
       <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium">Memory</CardTitle>
+    <CardTitle className="text-sm font-medium text-muted-foreground">Memory</CardTitle>
     <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
@@ -55,7 +58,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Power Usage</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Power Usage</CardTitle>
           <ZapIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -66,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium">CPU Cores</CardTitle>
+    <CardTitle className="text-sm font-medium text-muted-foreground">CPU Cores</CardTitle>
     <CpuIcon className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
@@ -76,7 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Local IP</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Local IP</CardTitle>
           <ServerIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -93,11 +96,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             >
               {isIpBlurred ? (
                 <div className="flex items-center justify-between">
-                  <EyeIcon className="h-4 w-4 text-white" />
+                  <EyeIcon className="h-4 w-4 text-black dark:text-white" />
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <EyeOffIcon className="h-4 w-4 text-white" />
+                  <EyeOffIcon className="h-4 w-4 text-black dark:text-white" />
                 </div>
               )}
             </Button>
@@ -107,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Cloudflared Status</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Cloudflared Status</CardTitle>
           <ServerIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -130,10 +133,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       </Card> */}
 
     </div>
-    <div className="mt-4 grid gap-4 grid-cols-1 mb-4">
+    <div className={`mt-4 grid gap-4 ${isAppleSilicon(data.cpuModel) ? 'sm:grid-cols-2' : 'lg:grid-cols-1'} mb-4`}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Storage</CardTitle>
               <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -144,6 +147,18 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <Progress value={(data.storageInfo.used / data.storageInfo.total) * 100} className="mt-2" />
             </CardContent>
           </Card>
+          {isAppleSilicon(data.cpuModel) && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">GPU Usage</CardTitle>
+              <CpuIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.gpuUsage || 0}%</div>
+              <Progress value={data.gpuUsage || 0} className="mt-2" />
+            </CardContent>
+          </Card>
+        )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-full">
 
@@ -162,6 +177,22 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           color="hsl(var(--chart-2))"
           unit="%"
         />
+        {isAppleSilicon(data.cpuModel) && (<>
+        <Chart 
+          data={data.gpuHistory} 
+          timePoints={data.timePoints} 
+          title="GPU Usage"
+          color="hsl(var(--chart-4))"
+          unit="%"
+        />
+        <Chart 
+          data={data.powerHistory} 
+          timePoints={data.timePoints} 
+          title="Power Usage"
+          color="hsl(var(--chart-3))"
+          unit="W"
+        /></>
+        )}
         {/* <Chart 
           data={data.powerHistory} 
           timePoints={data.timePoints} 
@@ -184,6 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="B/s"
         /> */}
       </div>
+      {!isAppleSilicon(data.cpuModel) && (
       <div className="grid col-span-full grid-cols-1 lg:grid-cols-1">
       <Chart 
           data={data.powerHistory} 
@@ -193,6 +225,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="W"
         />
       </div>
+      )}
 
         </div>
 

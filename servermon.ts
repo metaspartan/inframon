@@ -5,6 +5,7 @@ import { ServerData } from '@/types';
 import {
   getPowerUsage,
   getCpuUsage,
+  getGpuUsage,
   getMemoryUsage,
   getNetworkTraffic,
   getLocalIp,
@@ -25,6 +26,7 @@ app.use(cors());
 
 const historyLength = 3600; // 1 hour of data (1 data point per second)
 let cpuHistory: number[] = [];
+let gpuHistory: number[] = [];
 let memoryHistory: number[] = [];
 let powerHistory: number[] = [];
 let networkRxHistory: number[] = [];
@@ -35,11 +37,12 @@ async function updateHistory() {
   const now = new Date();
   const timePoint = now.toLocaleTimeString();
   
-  const [cpu, memory, power, network] = await Promise.all([
+  const [cpu, memory, power, network, gpu] = await Promise.all([
     getCpuUsage(),
     getMemoryUsage(),
     getPowerUsage(),
-    getNetworkTraffic()
+    getNetworkTraffic(),
+    getGpuUsage()
   ]);
 
   cpuHistory.push(cpu);
@@ -47,6 +50,7 @@ async function updateHistory() {
   powerHistory.push(power);
   networkRxHistory.push(network.rx);
   networkTxHistory.push(network.tx);
+  gpuHistory.push(gpu);
   timePoints.push(timePoint);
 
   if (cpuHistory.length > historyLength) cpuHistory.shift();
@@ -54,6 +58,7 @@ async function updateHistory() {
   if (powerHistory.length > historyLength) powerHistory.shift();
   if (networkRxHistory.length > historyLength) networkRxHistory.shift();
   if (networkTxHistory.length > historyLength) networkTxHistory.shift();
+  if (gpuHistory.length > historyLength) gpuHistory.shift();
   if (timePoints.length > historyLength) timePoints.shift();
 }
 
@@ -78,6 +83,7 @@ app.get('/api/server-data', async (req, res) => {
 
   const serverData: ServerData = {
     cpuUsage: cpuHistory[cpuHistory.length - 1] || 0,
+    gpuUsage: gpuHistory[gpuHistory.length - 1] || 0,
     memoryUsage: memoryHistory[memoryHistory.length - 1] || 0,
     powerUsage: powerHistory[powerHistory.length - 1] || 0,
     networkTraffic: {
@@ -88,6 +94,7 @@ app.get('/api/server-data', async (req, res) => {
     cloudflaredRunning: await isCloudflaredRunning(),
     timePoints,
     cpuHistory,
+    gpuHistory,
     memoryHistory,
     powerHistory,
     networkRxHistory,
@@ -136,4 +143,10 @@ frontendApp.use((req, res, next) => {
 const FPORT = FRONTEND_PORT;
 frontendApp.listen(FPORT, () => {
   console.log(`Server Monitor is running on http://${localIp}:${FPORT}`);
+});
+
+// kill server monitor this app
+process.on('SIGINT', () => {
+  console.log('Server Monitor is shutting down');
+  process.exit(0);
 });

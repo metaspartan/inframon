@@ -12,6 +12,7 @@ interface ChartProps {
 }
 
 const timeRanges = [
+  { value: "1m", label: "1 minute" },
   { value: "5m", label: "5 minutes" },
   { value: "15m", label: "15 minutes" },
   { value: "30m", label: "30 minutes" },
