@@ -28,3 +28,20 @@ export interface ServerData {
     available: number;
   };
 }
+
+export interface ServerNode {
+  id: string;
+  name: string;
+  ip: string;
+  port: number;
+  lastSeen: Date;
+  isMaster: boolean;
+  data: ServerData;
+}
+
+export interface RegistryConfig {
+  isMaster: boolean;
+  masterUrl?: string;
+  nodePort: number;
+  frontendPort: number;
+}

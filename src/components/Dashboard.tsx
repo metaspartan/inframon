@@ -2,10 +2,12 @@ import { ServerData } from '@/types';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CpuIcon, HardDriveIcon, ZapIcon, WifiIcon, ServerIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { CpuIcon, ZapIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Chart } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
+import { BsGpuCard, BsFillNvmeFill } from "react-icons/bs";
+import { FaMemory, FaEthernet, FaCloudflare } from "react-icons/fa";
 
 interface DashboardProps {
   data: ServerData;
@@ -48,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
     <CardTitle className="text-sm font-medium text-muted-foreground">Memory</CardTitle>
-    <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
+    <FaMemory className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
     <div className="text-2xl font-bold">{data.usedMemory.toFixed(2)} / {data.totalMemory.toFixed(2)} GB</div>
@@ -80,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Local IP</CardTitle>
-          <ServerIcon className="h-4 w-4 text-muted-foreground" />
+          <FaEthernet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
         <div className="flex items-center justify-between">
@@ -111,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Cloudflared Status</CardTitle>
-          <ServerIcon className="h-4 w-4 text-muted-foreground" />
+          <FaCloudflare className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{data.cloudflaredRunning ? '🟢 Running' : '🔴 Stopped'}</div>
@@ -137,7 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Storage</CardTitle>
-              <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
+              <BsFillNvmeFill className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
             <div className="flex justify-between items-center">
@@ -151,7 +153,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">GPU Usage</CardTitle>
-              <CpuIcon className="h-4 w-4 text-muted-foreground" />
+              <BsGpuCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{data.gpuUsage || 0}%</div>

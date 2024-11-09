@@ -20,7 +20,7 @@ Server⚡Monitor is a lightweight, real-time server monitoring application that 
 - MacOS (Apple Silicon)
 - Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
 
-## Installation
+## Installation on AMD Linux (Ubuntu Recommended)
 
 1. Clone the repository:
    ```
@@ -38,8 +38,32 @@ Server⚡Monitor is a lightweight, real-time server monitoring application that 
    bun run build
    ```
 
-4. Set up the systemd service:
-   Create a new file named `servermon.service` in `/etc/systemd/system/` with the following content:
+   ```
+   bun run compile-master
+   ```
+
+   Optional (if running multiple machines on a local network):
+   ```
+   bun run compile-node
+   ```
+
+4. Setup the master server:
+
+```
+sudo IS_MASTER=true bun run servermon.ts
+```
+
+For running multiple machines on a local network:
+(Repeat steps 1-3 for each node server, replacing `192.168.1.250` with your master server's local IP address, and master runs on port 3899)
+
+4. Setup the node server (replace `192.168.1.250` with your master server's local IP address), master runs on port 3899:
+
+```
+sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
+```
+
+5. Optional: Set up the systemd service (if AMD Linux):
+   Create a new file named `servermon.service` in `/etc/systemd/system/` with the following content (edited to your needs):
 
    ```
    [Unit]
@@ -58,21 +82,27 @@ Server⚡Monitor is a lightweight, real-time server monitoring application that 
 
    Replace `/path/to/servermon` with the actual path to your Server⚡Monitor installation directory and `your_username` with the appropriate system username.
 
-5. Enable and start the service:
+6. Enable and start the service:
    ```
    sudo systemctl enable servermon.service
    sudo systemctl start servermon.service
    ```
 
+7. Open a web browser on your local network and navigate to your master server's local IP address:
+
+```
+http://192.168.1.250:3869
+```
+
 ## Usage
 
-Once the service is running, you can access the Server⚡Monitor dashboard by opening a web browser and navigating to:
+Once the service is running, you can access the Infra⚡Mon dashboard by opening a web browser and navigating to:
 
 ```
 http://your_server_ip:3869
 ```
 
-Replace `your_server_ip` with the actual local network IP address of your server.
+Replace `your_server_ip` with the actual local network IP address of your master server.
 
 ## Configuration
 
