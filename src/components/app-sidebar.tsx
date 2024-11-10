@@ -27,6 +27,14 @@ const items = [
   },
 ]
 
+const sortNodesWithMasterFirst = (nodes: ServerNode[]) => {
+    return [...nodes].sort((a, b) => {
+      if (a.isMaster && !b.isMaster) return -1;
+      if (!a.isMaster && b.isMaster) return 1;
+      return 0;
+    });
+  };
+
 export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
   return (
     <Sidebar>
@@ -53,13 +61,13 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
               ))}
              <SidebarSeparator />
               <SidebarGroupLabel>Nodes</SidebarGroupLabel>
-            {nodes.length > 0 && (
+              {nodes.length > 0 && (
                 <>
-                    {nodes.map((node) => (
+                    {sortNodesWithMasterFirst(nodes).map((node) => (
                     <SidebarMenuItem key={node.id}>
                         <SidebarMenuButton asChild>
-                         <a href={`/node/${node.id}`} className="dark:text-white text-black">
-                             <ServerIcon className="h-4 w-4 mr-2" />
+                        <a href={`/node/${node.id}`} className="dark:text-white text-black">
+                            <ServerIcon className="h-4 w-4 mr-2" />
                             <span style={{fontSize: '13px'}}>{node.name}</span>
                             {node.isMaster && <span className="ml-2 text-xs text-yellow-500">(Master)</span>}
                         </a>

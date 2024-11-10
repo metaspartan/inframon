@@ -19,10 +19,18 @@ export function NodeList({ nodes }: { nodes: ServerNode[] }) {
     );
   }
 
+  const sortNodesWithMasterFirst = (nodes: ServerNode[]) => {
+    return [...nodes].sort((a, b) => {
+      if (a.isMaster && !b.isMaster) return -1;
+      if (!a.isMaster && b.isMaster) return 1;
+      return 0;
+    });
+  };
+
   return (
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {nodes.map(node => (
+        {sortNodesWithMasterFirst(nodes).map(node => (
           <Card 
             key={node.id}
             className="cursor-pointer hover:bg-accent/50 transition-colors"
