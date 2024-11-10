@@ -2,12 +2,11 @@ import { NodeWithData } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Progress } from './ui/progress';
-import { CpuIcon, Server, NetworkIcon, ZapIcon } from 'lucide-react';
+import { CpuIcon, NetworkIcon, ZapIcon } from 'lucide-react';
 import { BsGpuCard, BsFillNvmeFill } from "react-icons/bs";
-import { FaMemory, FaEthernet, FaCloudflare } from "react-icons/fa";
+import { FaMemory, FaEthernet, FaCloudflare, FaApple, FaLinux } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
-import { ModeToggle } from './mode-toggle';
 
 export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
   const navigate = useNavigate();
@@ -160,7 +159,8 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
                 {node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}
                 {node.isMaster && <span className="ml-2 text-sm text-yellow-500 mr-2">(Master)</span>}
               </CardTitle>
-              <Server className="h-5 w-5 text-muted-foreground" />
+              {node.os === 'macOS' && <FaApple className="h-5 w-5 text-muted-foreground" />}
+              {node.os === 'Linux' && <FaLinux className="h-5 w-5 text-muted-foreground" />}
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="compute" className="w-full">
