@@ -88,6 +88,15 @@ if [[ "$(uname)" == "Darwin" ]]; then
     launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
 fi
 
+# print_status "Ensuring auto master node discovery is allowed through firewall..."
+# if [[ "$(uname)" == "Linux" ]]; then
+#     sudo ufw allow 3898/tcp
+#     sudo ufw allow 3899/tcp
+# elif [[ "$(uname)" == "Darwin" ]]; then
+#     sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add $(which bun)
+#     sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock $(which bun)
+# fi
+
 # Build the application
 print_status "Building application..."
 
