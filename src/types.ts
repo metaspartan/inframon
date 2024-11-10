@@ -37,6 +37,7 @@ export interface ServerNode {
   lastSeen: Date;
   isMaster: boolean;
   data: ServerData;
+  compressedData?: Uint8Array;
 }
 
 export interface RegistryConfig {

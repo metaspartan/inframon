@@ -20,6 +20,7 @@ import {
   isCloudflaredRunning,
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
+import { compressData, decompressData } from './src/lib/utils';
 
 const nodeId = uuidv4();
 const app = express();
@@ -28,43 +29,73 @@ const port = config.nodePort;
 const FRONTEND_PORT = config.frontendPort;
 
 app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const registryApp = express();
 const REGISTRY_PORT = 3899;
 
 registryApp.use(cors());
-registryApp.use(express.json());
+registryApp.use(express.json({ limit: '50mb' }));
+registryApp.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const nodes = new Map<string, ServerNode>();
 
 registryApp.post('/api/nodes/register', (req, res) => {
-  const newNode: ServerNode = req.body;
-  newNode.lastSeen = new Date();
+  try {
+    const compressedNode = req.body;
+    if (!compressedNode.compressedData) {
+      throw new Error('No compressed data received');
+    }
+    
+    const decompressedData = decompressData(compressedNode.compressedData);
+    const newNode: ServerNode = {
+      ...compressedNode,
+      data: decompressedData,
+      lastSeen: new Date(),
+      compressedData: undefined
+    };
 
-  // Check if a node with this IP already exists (excluding the master node)
-  const existingNode = Array.from(nodes.values()).find(
-    node => node.ip === newNode.ip && !node.isMaster
-  );
+    // Check if a node with this IP already exists (excluding the master node)
+    const existingNode = Array.from(nodes.values()).find(
+      node => node.ip === newNode.ip && !node.isMaster
+    );
 
-  if (existingNode) {
-    // Update the existing node's data instead of creating a new entry
-    existingNode.lastSeen = new Date();
-    existingNode.data = newNode.data;
-    existingNode.name = newNode.name;
-    nodes.set(existingNode.id, existingNode);
-    res.json({ success: true, message: 'Node updated' });
-    return;
+    if (existingNode) {
+      // Update the existing node's data instead of creating a new entry
+      existingNode.lastSeen = new Date();
+      existingNode.data = decompressedData;
+      existingNode.name = newNode.name;
+      nodes.set(existingNode.id, existingNode);
+      res.json({ success: true, message: 'Node updated' });
+      return;
+    }
+
+    // If no existing node found, add the new node
+    nodes.set(newNode.id, newNode);
+    res.json({ success: true, message: 'Node registered' });
+  } catch (error) {
+    console.error('Error processing node registration:', error);
+    res.status(500).json({ success: false, message: 'Error processing registration' });
   }
-
-  // If no existing node found, add the new node
-  nodes.set(newNode.id, newNode);
-  res.json({ success: true, message: 'Node registered' });
 });
 
 registryApp.get('/api/nodes', (req, res) => {
-  const activeNodes = Array.from(nodes.values()).filter(
-    node => new Date().getTime() - new Date(node.lastSeen).getTime() < 60000
-  );
+  const activeNodes = Array.from(nodes.values())
+    .filter(node => new Date().getTime() - new Date(node.lastSeen).getTime() < 60000)
+    .map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        cpuHistory: node.data.cpuHistory.slice(-60),
+        gpuHistory: node.data.gpuHistory.slice(-60),
+        memoryHistory: node.data.memoryHistory.slice(-60),
+        powerHistory: node.data.powerHistory.slice(-60),
+        networkRxHistory: node.data.networkRxHistory.slice(-60),
+        networkTxHistory: node.data.networkTxHistory.slice(-60),
+        timePoints: node.data.timePoints.slice(-60)
+      }
+    }));
   res.json(activeNodes);
 });
 
@@ -77,7 +108,18 @@ registryApp.get('/api/nodes/:nodeId', (req, res) => {
     return;
   }
   
-  res.json(node.data);
+  const compressedData = {
+    ...node.data,
+    cpuHistory: node.data.cpuHistory.slice(-60),
+    gpuHistory: node.data.gpuHistory.slice(-60),
+    memoryHistory: node.data.memoryHistory.slice(-60),
+    powerHistory: node.data.powerHistory.slice(-60),
+    networkRxHistory: node.data.networkRxHistory.slice(-60),
+    networkTxHistory: node.data.networkTxHistory.slice(-60),
+    timePoints: node.data.timePoints.slice(-60)
+  };
+  
+  res.json(compressedData);
 });
 
 console.log(`Master Node: ${config.isMaster}`);
@@ -104,6 +146,21 @@ let powerHistory: number[] = [];
 let networkRxHistory: number[] = [];
 let networkTxHistory: number[] = [];
 let timePoints: string[] = [];
+
+function cleanupOldData() {
+  // Keep only last hour of data (3600 points)
+  const maxLength = 3600;
+  
+  if (cpuHistory.length > maxLength) {
+    cpuHistory = cpuHistory.slice(-maxLength);
+    memoryHistory = memoryHistory.slice(-maxLength);
+    powerHistory = powerHistory.slice(-maxLength);
+    networkRxHistory = networkRxHistory.slice(-maxLength);
+    networkTxHistory = networkTxHistory.slice(-maxLength);
+    gpuHistory = gpuHistory.slice(-maxLength);
+    timePoints = timePoints.slice(-maxLength);
+  }
+}
 
 async function updateHistory() {
   const now = new Date();
@@ -183,6 +240,18 @@ async function updateHistory() {
 async function registerWithMaster(serverData: ServerData) {
   if (!config.isMaster) {
     try {
+      // Take only last 60 points for histories
+      const compressedData = {
+        ...serverData,
+        cpuHistory: serverData.cpuHistory.slice(-60),
+        gpuHistory: serverData.gpuHistory.slice(-60),
+        memoryHistory: serverData.memoryHistory.slice(-60),
+        powerHistory: serverData.powerHistory.slice(-60),
+        networkRxHistory: serverData.networkRxHistory.slice(-60),
+        networkTxHistory: serverData.networkTxHistory.slice(-60),
+        timePoints: serverData.timePoints.slice(-60)
+      };
+
       const node = {
         id: nodeId,
         name: await getSystemName(),
@@ -190,16 +259,25 @@ async function registerWithMaster(serverData: ServerData) {
         port: config.nodePort,
         lastSeen: new Date(),
         isMaster: false,
-        data: serverData
+        data: compressedData,
+        compressedData: compressData(compressedData)
       };
 
-      await fetch(`${config.masterUrl}/api/nodes/register`, {
+      const response = await fetch(`${config.masterUrl}/api/nodes/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(node)
+        headers: { 
+          'Content-Type': 'application/json',
+          'Content-Encoding': 'gzip'
+        },
+        body: JSON.stringify({ ...node, data: undefined })  // Send only compressed data
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to register with master: ${response.status}`);
+      }
     } catch (error) {
       console.error('Failed to register with master:', error);
+      setTimeout(() => registerWithMaster(serverData), 5000);
     }
   }
 }
