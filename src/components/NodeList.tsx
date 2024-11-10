@@ -7,6 +7,7 @@ import { BsGpuCard, BsFillNvmeFill } from "react-icons/bs";
 import { FaMemory, FaEthernet, FaCloudflare, FaApple, FaLinux } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { Badge } from "@/components/ui/badge"
 
 export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
       </CardContent>
     </Card>
   </div>
-  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full">
         {sortNodesWithMasterFirst(nodes).map(node => (
           <Card 
             key={node.id}
@@ -157,7 +158,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
             >
               <CardTitle className="text-lg font-medium">
                 {node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}
-                {node.isMaster && <span className="ml-2 text-sm text-yellow-500 mr-2">(Master)</span>}
+                {node.isMaster && <Badge variant="secondary" className="ml-2 text-yellow-500 mr-2">M</Badge>}
               </CardTitle>
               {node.os === 'macOS' && <FaApple className="h-5 w-5 text-muted-foreground" />}
               {node.os === 'Linux' && <FaLinux className="h-5 w-5 text-muted-foreground" />}

@@ -1,4 +1,4 @@
-import { Gauge, ServerIcon } from "lucide-react"
+import { Gauge } from "lucide-react"
 import { Link } from 'react-router-dom';
 import {
   Sidebar,
@@ -17,6 +17,8 @@ import {
 import { ModeToggle } from '@/components/mode-toggle';
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { ServerNode } from "@/types";
+import { FaApple, FaLinux } from "react-icons/fa";
+import { Badge } from "@/components/ui/badge";
 
 // Menu items.
 const items = [
@@ -65,14 +67,19 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
                 <>
                     {sortNodesWithMasterFirst(nodes).map((node) => (
                     <SidebarMenuItem key={node.id}>
-                        <SidebarMenuButton asChild>
-                        <Link to={`/node/${node.id}`} className="dark:text-white text-black">
-                            <ServerIcon className="h-4 w-4 mr-2" />
-                            <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
-                            {node.isMaster && <span className="ml-2 text-xs text-yellow-500">(Master)</span>}
-                        </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                    <Link to={`/node/${node.id}`} className="dark:text-white text-black w-full">
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center">
+                                {node.os === 'macOS' && <FaApple className="h-4 w-4 mr-2" />}
+                                {node.os === 'Linux' && <FaLinux className="h-4 w-4 mr-2" />}
+                                <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
+                            </div>
+                            {node.isMaster && <Badge variant="secondary" className="text-yellow-500">M</Badge>}
+                        </div>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                     ))}
                 </>
                 )}
@@ -92,7 +99,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.1</p>
+        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.2</p>
         <a href="https://x.com/carsenklock" className="dark:text-white text-black mx-auto mb-4 " target="_blank" rel="noopener noreferrer">🔨 Built by Carsen Klock</a>
       </SidebarFooter>
     </Sidebar>
