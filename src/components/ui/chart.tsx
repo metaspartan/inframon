@@ -24,6 +24,7 @@ export function Chart({ data, timePoints, title, color, unit }: ChartProps) {
 
   const getDataPointsCount = (range: string) => {
     switch (range) {
+      case "1m": return 60;
       case "5m": return 300;
       case "15m": return 900;
       case "30m": return 1800;
