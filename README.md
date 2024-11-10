@@ -6,6 +6,14 @@ Inframon Server Monitor is a lightweight, real-time local server monitoring appl
 
 #### TODO: Linux NVIDIA Support
 
+## Install Script
+
+See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
+
+```
+curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.sh | bash
+```
+
 ![Inframon](inframon.png)
 
 ![Server Monitor Dashboard](node.png)
@@ -29,12 +37,10 @@ Inframon Server Monitor is a lightweight, real-time local server monitoring appl
 - MacOS (Apple Silicon)
 - Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
 
-## Install Script
-
-See [install.sh](install.sh) for a simple install script that handles all the steps below.
+## Install Bun for Manual Installation
 
 ```
-curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.sh | bash
+curl -fsSL https://bun.sh/install | bash
 ```
 
 ## Installation on AMD Linux (Ubuntu Recommended)
@@ -53,15 +59,6 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.
 3. Build the application:
    ```
    bun run build
-   ```
-
-   ```
-   bun run compile-master
-   ```
-
-   Optional (if running multiple machines on a local network):
-   ```
-   bun run compile-node
    ```
 
 4. Setup the master server:
@@ -116,11 +113,11 @@ http://192.168.1.250:3869
 Once the service is running, you can access the ⚡Inframon dashboard by opening a web browser and navigating to:
 
 ```
-http://your_server_ip:3869
+http://192.168.1.250:3869
 ```
 
-Replace `your_server_ip` with the actual local network IP address of your master server.
+Replace `192.168.1.250` with the actual local network IP address of your master server.
 
 ## Configuration
 
-Edit `lib/api.ts` to change the server's local IP address if having issues and run `bun run build` again.
+You can create a new `.env` file to configure the master and node servers. See [.env.example](.env.example) for more information.
