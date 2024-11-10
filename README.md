@@ -6,6 +6,8 @@ This is intended only to be used with Linux AMD machines with ROCm GPU drivers i
 
 Heavily a work in progress, but it's functional!
 
+Linux NVIDIA Support is coming soon!
+
 ![Inframon](dashboard.png)
 ![Server Monitor Dashboard](screenshotdual.png)
 

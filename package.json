@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "server": "bun run servermon.ts",
+    "compile": "bun build --compile servermon.ts",
     "compile-master": "IS_MASTER=true bun build --compile servermon.ts",
     "compile-node": "IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun build --compile servermon.ts",
     "build": "tsc && vite build",
