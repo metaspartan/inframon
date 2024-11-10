@@ -4,6 +4,8 @@ Inframon Server⚡Monitor is a lightweight, real-time server monitoring applicat
 
 This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
 
+Heavily a work in progress, but it's functional!
+
 ![Inframon](dashboard.png)
 ![Server Monitor Dashboard](screenshotdual.png)
 

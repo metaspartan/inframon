@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, Link } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import Dashboard from '@/components/Dashboard';
@@ -8,10 +8,20 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { decompressData } from '@/lib/utils';
 import { NodesContext } from '@/contexts/NodesContext';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Slash } from 'lucide-react';
+
 
 function DashboardWrapper() {
   const { nodeId } = useParams();
-  const [nodes, _] = useContext(NodesContext);
+  const [nodes] = useContext(NodesContext);
 
   const nodeData = nodes.find(node => node.id === nodeId)?.data;
 
@@ -20,6 +30,56 @@ function DashboardWrapper() {
   }
 
   return <Dashboard data={nodeData} />;
+}
+
+function DynamicBreadcrumbs() {
+  return (
+    <Routes>
+      <Route 
+        path="/" 
+        element={
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <Link to="/" className="text-muted-foreground hover:text-foreground">Dashboard</Link>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        } 
+      />
+      <Route 
+        path="/node/:nodeId" 
+        element={<NodeBreadcrumbs />} 
+      />
+    </Routes>
+  );
+}
+
+function NodeBreadcrumbs() {
+  const { nodeId } = useParams();
+  const [nodes] = useContext(NodesContext);
+  
+  const node = nodes.find(node => node.id === nodeId);
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <Link to="/" className="text-muted-foreground hover:text-foreground">Dashboard</Link>
+        </BreadcrumbItem>
+        {nodeId && node && (
+          <>
+            <BreadcrumbSeparator>
+              <Slash />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-muted-foreground">{node.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </>
+        )}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
 }
 
 function App() {
@@ -92,26 +152,27 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <NodesContext.Provider value={[nodes, setNodes]}>
-      <BrowserRouter>
-        <SidebarProvider>
-          <AppSidebar nodes={nodes} />
-          <div className="bg-background text-foreground min-h-screen">
-            <div className="container mx-auto p-4">
-              <header className="mb-4 flex justify-between items-center">
-                <SidebarTrigger />
-              </header>
-              <Routes>
-                <Route path="/" element={<NodeList nodes={nodes} />} />
-                <Route path="/node/:nodeId" element={<DashboardWrapper />} />
-              </Routes>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <NodesContext.Provider value={[nodes, setNodes]}>
+          <SidebarProvider>
+            <AppSidebar nodes={nodes} />
+            <div className="bg-background text-foreground min-h-screen">
+              <div className="container mx-auto p-4">
+                <header className="mb-4 flex justify-between items-center">
+                  <SidebarTrigger />
+                  <DynamicBreadcrumbs />
+                </header>
+                <Routes>
+                  <Route path="/" element={<NodeList nodes={nodes} />} />
+                  <Route path="/node/:nodeId" element={<DashboardWrapper />} />
+                </Routes>
+              </div>
             </div>
-          </div>
-        </SidebarProvider>
-      </BrowserRouter>
-      </NodesContext.Provider>
-    </ThemeProvider>
+          </SidebarProvider>
+        </NodesContext.Provider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 

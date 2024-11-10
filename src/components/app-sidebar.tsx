@@ -1,5 +1,5 @@
 import { Gauge, ServerIcon } from "lucide-react"
-
+import { Link } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +40,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
     <Sidebar>
     <SidebarHeader>
     <header className="flex justify-between items-center">
-              <a href="/"><h2 className="text-2xl font-bold dark:text-white text-black ml-1">Infra⚡Mon</h2></a>
+              <Link to="/"><h2 className="text-2xl font-bold dark:text-white text-black ml-1">⚡Inframon</h2></Link>
               <ModeToggle />
             </header>
       </SidebarHeader>
@@ -52,10 +52,10 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url} className="dark:text-white text-black">
+                  <Link to={item.url} className="dark:text-white text-black">
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -66,11 +66,11 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
                     {sortNodesWithMasterFirst(nodes).map((node) => (
                     <SidebarMenuItem key={node.id}>
                         <SidebarMenuButton asChild>
-                        <a href={`/node/${node.id}`} className="dark:text-white text-black">
+                        <Link to={`/node/${node.id}`} className="dark:text-white text-black">
                             <ServerIcon className="h-4 w-4 mr-2" />
                             <span style={{fontSize: '13px'}}>{node.name}</span>
                             {node.isMaster && <span className="ml-2 text-xs text-yellow-500">(Master)</span>}
-                        </a>
+                        </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     ))}
@@ -92,7 +92,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.0</p>
+        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.1</p>
         <a href="https://github.com/metaspartan/servermon" className="hover:underline dark:text-white text-black mx-auto mb-4" target="_blank" rel="noopener noreferrer">Built by Carsen Klock</a>
       </SidebarFooter>
     </Sidebar>
