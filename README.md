@@ -1,4 +1,7 @@
 # ⚡Inframon
+![GitHub](https://img.shields.io/github/license/metaspartan/inframon)
+![GitHub Repo stars](https://img.shields.io/github/stars/metaspartan/inframon?style=social)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/metaspartan)
 
 Inframon Server Monitor is a lightweight, real-time local server networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local networked nodes that run `cloudflared` tunnels or clusters of Mac Minis for AI/ML workload monitoring. Auto Master Node Local Network Discovery is supported (multiple nodes supported). Written by Carsen Klock (@metaspartan)
 
@@ -16,9 +19,9 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/mai
 
 (Setup your master node first, then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network)
 
-![Inframon](inframon.png)
+![Inframon](animated.gif)
 
-![Server Monitor Dashboard](node.png)
+![Server Monitor Dashboard](dash.gif)
 
 ## Features
 
@@ -39,6 +42,16 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/mai
 
 - MacOS (Apple Silicon)
 - Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
+
+## Install Script
+
+See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
+
+```
+curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
+```
+
+(Setup your master node first, then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network)
 
 ## Install Bun for Manual Installation
 
