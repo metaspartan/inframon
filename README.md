@@ -1,19 +1,18 @@
-# Infra⚡Mon
+# ⚡Inframon
 
-Inframon Server⚡Monitor is a lightweight, real-time server monitoring application that provides a sleek local dashboard for tracking various system metrics, particularly useful for local server nodes that run `cloudflared` tunnels or clusters of Mac Minis. Written by Carsen Klock (@metaspartan)
+Inframon Server Monitor is a lightweight, real-time local server monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local server nodes that run `cloudflared` tunnels or clusters of Mac Minis. Written by Carsen Klock (@metaspartan)
 
-This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
+#### This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
 
-Heavily a work in progress, but it's functional!
+#### TODO: Linux NVIDIA Support
 
-Linux NVIDIA Support is coming soon!
+![Inframon](inframon.png)
 
-![Inframon](dashboard.png)
-![Server Monitor Dashboard](screenshotdual.png)
+![Server Monitor Dashboard](node.png)
 
 ## Features
 
-- Real-time monitoring of CPU usage, memory usage, and power consumption
+- Real-time monitoring of CPU usage, memory usage, and power wattage consumption
 - System information display (hostname, CPU model, uptime)
 - Storage usage visualization
 - Historical data charts for CPU, memory, and power usage
@@ -21,11 +20,22 @@ Linux NVIDIA Support is coming soon!
 - Local IP address display (with toggle to show/hide)
 - Cloudflared status indicator
 - GPU usage monitoring for Apple Silicon Macs
+- Local Networked Node list with power usage, cpu usage, memory usage, and more
+- Master and Node modes (One master, for multiple nodes)
+- Install script for easy setup
 
 ## Supported Platforms and Devices
 
 - MacOS (Apple Silicon)
 - Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
+
+## Install Script
+
+See [install.sh](install.sh) for a simple install script that handles all the steps below.
+
+```
+curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.sh | bash
+```
 
 ## Installation on AMD Linux (Ubuntu Recommended)
 
@@ -103,7 +113,7 @@ http://192.168.1.250:3869
 
 ## Usage
 
-Once the service is running, you can access the Infra⚡Mon dashboard by opening a web browser and navigating to:
+Once the service is running, you can access the ⚡Inframon dashboard by opening a web browser and navigating to:
 
 ```
 http://your_server_ip:3869
