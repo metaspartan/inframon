@@ -142,7 +142,7 @@ console.log(`Master Node: ${config.isMaster}`);
 // Start registry server first if master
 if (config.isMaster) {
   registryApp.listen(REGISTRY_PORT, async () => {
-    console.log(`Master Enabled ✅ Registry server running on port ${REGISTRY_PORT}`);
+    console.log(`✅ Master Node Enabled running on port ${REGISTRY_PORT}`);
     // Start the update history loop after registry is running
     updateHistory();
     setInterval(updateHistory, 1000);
@@ -345,7 +345,7 @@ app.get('/api/server-data', async (req, res) => {
 const localIp = await getLocalIp();
 
 app.listen(port, () => {
-  console.log(`Server Monitor server is running on http://${localIp}:${port}`);
+  console.log(`Inframon API server is running on http://${localIp}:${port}`);
 });
 
 // Initial history update
@@ -373,11 +373,21 @@ frontendApp.use((req, res, next) => {
 
 const FPORT = FRONTEND_PORT;
 frontendApp.listen(FPORT, () => {
-  console.log(`Server Monitor is running on http://${localIp}:${FPORT}`);
+  console.log(`Inframon frontend is running on http://${localIp}:${FPORT}`);
 });
 
 // kill server monitor this app
 process.on('SIGINT', () => {
-  console.log('Server Monitor is shutting down');
+  console.log('Inframon is shutting down');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Inframon is shutting down');
+  process.exit(0);
+});
+
+process.on('SIGKILL', () => {
+  console.log('Inframon is being killed');
   process.exit(0);
 });

@@ -20,9 +20,11 @@ print_warning() {
 }
 
 # Check if running as root
+if [[ "$(uname)" == "Linux" ]]; then
 if [ "$EUID" -ne 0 ]; then 
     print_error "Please run as root (use sudo)"
     exit 1
+fi
 fi
 
 # Check system type
@@ -46,9 +48,9 @@ if ! command -v bun &> /dev/null; then
 fi
 
 # Clone repository
-print_status "Cloning Inframon repository..."
-git clone https://github.com/metaspartan/inframon.git
-cd inframon
+# print_status "Cloning Inframon repository..."
+# git clone https://github.com/metaspartan/inframon.git
+# cd inframon
 
 # Install node dependencies
 print_status "Installing dependencies..."
@@ -86,6 +88,12 @@ echo "IS_MASTER=$IS_MASTER" > .env
 if [[ $IS_MASTER == false ]]; then
     echo "IS_MASTER=false" >> .env
     echo "MASTER_URL=$MASTER_URL" >> .env
+fi
+
+# Ensure if old install exists, unload it if darwin
+if [[ "$(uname)" == "Darwin" ]]; then
+    launchctl bootout system/com.inframon.service 2>/dev/null || true
+    launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
 fi
 
 # Build the application
@@ -150,6 +158,122 @@ EOF
             * ) echo "Please answer yes or no.";;
         esac
     done
+elif [[ "$OS_TYPE" == "macos" ]]; then
+    while true; do
+        read -p "Do you want to install Inframon as a system service? *macOS Only* (y/n): " install_service
+        case $install_service in
+            [Yy]* )
+                # Get current user
+                CURRENT_USER=$SUDO_USER
+                if [ -z "$CURRENT_USER" ]; then
+                    CURRENT_USER=$(whoami)
+                fi
+                
+# Create LaunchDaemon plist file
+PLIST_PATH="/Users/${CURRENT_USER}/Library/LaunchAgents/com.inframon.service.plist"
+APP_DIR=$(pwd)
+# Verify binary exists and is executable
+BINARY_PATH="${APP_DIR}/inframon"
+if [ ! -f "$BINARY_PATH" ]; then
+    print_error "Compiled binary not found at $BINARY_PATH"
+    exit 1
+fi
+
+if [ -f "$PLIST_PATH" ]; then
+    print_status "Removing old plist file at $PLIST_PATH"
+    rm "$PLIST_PATH"
+fi
+
+# Make binary executable
+# sudo chmod +x "$BINARY_PATH"
+
+# Create the plist file
+cat > "$PLIST_PATH" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>IS_MASTER</key>
+        <string>${IS_MASTER}</string>
+        <key>HOST</key>
+        <string>0.0.0.0</string>
+EOF
+
+if [[ $IS_MASTER == false ]]; then
+    cat >> "$PLIST_PATH" << EOF
+        <key>MASTER_URL</key>
+        <string>${MASTER_URL}</string>
+EOF
+fi
+
+cat >> "$PLIST_PATH" << EOF
+    </dict>
+    <key>GroupName</key>
+    <string>wheel</string>
+    <key>KeepAlive</key>
+    <true/>
+    <key>Label</key>
+    <string>com.inframon.service</string>
+    <key>ProcessType</key>
+    <string>Standard</string>
+    <key>Program</key>
+    <string>${BINARY_PATH}</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardErrorPath</key>
+    <string>${APP_DIR}/inframon.stderr.log</string>
+    <key>StandardOutPath</key>
+    <string>${APP_DIR}/inframon.stdout.log</string>
+    <key>UserName</key>
+    <string>root</string>
+    <key>WorkingDirectory</key>
+    <string>${APP_DIR}</string>
+</dict>
+</plist>
+EOF
+
+# Set permissions and ownership
+# sudo chown root:wheel "$PLIST_PATH"
+# sudo chmod 644 "$PLIST_PATH"
+# sudo chown root:wheel "$BINARY_PATH"
+# sudo chmod 755 "$BINARY_PATH"
+
+# launchctl limit maxfiles 2147483646 2147483646
+
+# Unload and load the service
+# sudo launchctl bootout system/com.inframon.service 2>/dev/null || true
+# sudo launchctl bootstrap system "$PLIST_PATH"
+
+print_status "Loading the service..."
+# These must be ran WITHOUT sudo
+launchctl load -w $PLIST_PATH
+launchctl enable system/com.inframon.service
+launchctl start com.inframon.service
+
+# Verify the service status
+print_status "Verifying service status..."
+
+if sudo launchctl print system/com.inframon.service 2>/dev/null; then
+    print_status "Service is loaded"
+            if pgrep -f "inframon"; then
+                print_status "Inframon launchd process is running!"
+            else
+                print_error "Process not running. Check logs at ${APP_DIR}/inframon.stderr.log"
+            fi
+                else
+                    print_error "Service failed to load. Check logs at ${APP_DIR}/inframon.stderr.log"
+                fi
+                break
+                ;;
+            [Nn]* ) 
+                print_status "Skipping service installation"
+                break
+                ;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
 
 # Function to get local IP based on OS
@@ -171,6 +295,11 @@ if [[ $IS_MASTER == true ]]; then
 else
     print_status "Node installed and configured to connect to master at $MASTER_URL"
 fi
-
-print_warning "Note: If you installed the systemd service, the application is running in the background."
-print_warning "You can check the status with: sudo systemctl status inframon"
+if [[ "$(uname)" == "Linux" ]]; then
+    print_warning "Note: If you installed the systemd service, the application is running in the background."
+    print_warning "You can check the status with: sudo systemctl status inframon"
+fi
+if [[ "$(uname)" == "Darwin" ]]; then
+    print_warning "Note: If you installed the launchd service, the application is running in the background."
+    print_warning "You can check the status with: sudo launchctl print system/com.inframon.service"
+fi
