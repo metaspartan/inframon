@@ -38,10 +38,27 @@ registryApp.use(express.json());
 const nodes = new Map<string, ServerNode>();
 
 registryApp.post('/api/nodes/register', (req, res) => {
-  const node: ServerNode = req.body;
-  node.lastSeen = new Date();
-  nodes.set(node.id, node);
-  res.json({ success: true });
+  const newNode: ServerNode = req.body;
+  newNode.lastSeen = new Date();
+
+  // Check if a node with this IP already exists (excluding the master node)
+  const existingNode = Array.from(nodes.values()).find(
+    node => node.ip === newNode.ip && !node.isMaster
+  );
+
+  if (existingNode) {
+    // Update the existing node's data instead of creating a new entry
+    existingNode.lastSeen = new Date();
+    existingNode.data = newNode.data;
+    existingNode.name = newNode.name;
+    nodes.set(existingNode.id, existingNode);
+    res.json({ success: true, message: 'Node updated' });
+    return;
+  }
+
+  // If no existing node found, add the new node
+  nodes.set(newNode.id, newNode);
+  res.json({ success: true, message: 'Node registered' });
 });
 
 registryApp.get('/api/nodes', (req, res) => {
