@@ -1,8 +1,8 @@
 # ⚡Inframon
 
-Inframon Server Monitor is a lightweight, real-time local server monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local networked nodes that run `cloudflared` tunnels or clusters of Mac Minis for AI/ML workload monitoring. Written by Carsen Klock (@metaspartan)
+Inframon Server Monitor is a lightweight, real-time local server networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local networked nodes that run `cloudflared` tunnels or clusters of Mac Minis for AI/ML workload monitoring. Auto Master Node Local Network Discovery is supported (multiple nodes supported). Written by Carsen Klock (@metaspartan)
 
-#### This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
+#### This is currently intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
 
 #### TODO: Linux NVIDIA Support
 
@@ -13,6 +13,8 @@ See [install.sh](install.sh) for a simple install script that handles all the ma
 ```
 curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
 ```
+
+(Setup your master node first, then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network)
 
 ![Inframon](inframon.png)
 
@@ -31,6 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/mai
 - Local Networked Node list with power usage, cpu usage, memory usage, and more
 - Master and Node modes (One master, for multiple nodes)
 - Install script for easy setup
+- Auto Master Node Local Network Discovery (No need to manually set the master URL on each node)
 
 ## Supported Platforms and Devices
 
@@ -68,7 +71,7 @@ sudo IS_MASTER=true bun run inframon.ts
 ```
 
 For running multiple machines on a local network:
-(Repeat steps 1-3 for each node server, replacing `192.168.1.250` with your master server's local IP address, and master runs on port 3899)
+(Repeat steps 1-3 for each node server, replacing `192.168.1.250` with your master server's local IP address, and master runs on port 3899, there is no need to manually set the master URL on each node as auto discovery is supported on port 3898)
 
 4. Setup the node server (replace `192.168.1.250` with your master server's local IP address), master runs on port 3899:
 

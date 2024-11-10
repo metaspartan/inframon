@@ -17,6 +17,7 @@ import {
   getTotalMemory,
   getUsedMemory,
   getCpuCoreCount,
+  getOs,
   getSystemName,
   getUptime,
   getCpuModel,
@@ -77,6 +78,7 @@ registryApp.post('/api/nodes/register', (req, res) => {
     const newNode: ServerNode = {
       id: node.id,
       name: node.name,
+      os: node.os,
       ip: node.ip,
       port: node.port,
       lastSeen: new Date(),
@@ -113,6 +115,7 @@ registryApp.get('/api/nodes', (req, res) => {
     .map(node => ({
       id: node.id,
       name: node.name,
+      os: node.os,
       ip: node.ip,
       port: node.port,
       lastSeen: node.lastSeen,
@@ -252,6 +255,7 @@ async function updateHistory() {
     const node: ServerNode = {
       id: nodeId,
       name: await getSystemName(),
+      os: await getOs(),
       ip: await getLocalIp(),
       port: config.nodePort,
       lastSeen: new Date(),
@@ -291,6 +295,7 @@ async function registerWithMaster(serverData: ServerData) {
       const node = {
         id: nodeId,
         name: await getSystemName(),
+        os: await getOs(),
         ip: await getLocalIp(),
         port: config.nodePort,
         lastSeen: new Date(),

@@ -32,6 +32,7 @@ export interface ServerData {
 export interface ServerNode {
   id: string;
   name: string;
+  os: string;
   ip: string;
   port: number;
   lastSeen: Date;

@@ -290,6 +290,15 @@ export async function getSystemName(): Promise<string> {
   }
 }
 
+export async function getOs(): Promise<string> {
+  if (isLinux) {
+    return 'Linux';
+  } else if (isMacOS) {
+    return 'macOS';
+  }
+  return 'Unknown';
+}
+
 export async function getUptime(): Promise<string> {
   if (isLinux) {
     try {
