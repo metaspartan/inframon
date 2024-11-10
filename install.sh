@@ -67,13 +67,7 @@ while true; do
             ;;
         [Nn]* ) 
             IS_MASTER=false
-            if [[ $IS_MASTER == false ]]; then
-                read -p "Enter master node local network URL on port 3899 (e.g., http://192.168.1.250:3899): " MASTER_URL
-                if [[ -z "$MASTER_URL" ]]; then
-                    print_error "Master URL cannot be empty for non-master nodes"
-                    continue
-                fi
-            fi
+            # Auto-discovery will handle master URL
             break
             ;;
         * ) echo "Please answer yes or no.";;

@@ -26,6 +26,10 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { compressData } from './src/lib/utils';
 
+import { NodeDiscovery } from './src/lib/discovery';
+
+const discovery = new NodeDiscovery();
+
 const nodeId = uuidv4();
 const app = express();
 
@@ -147,14 +151,26 @@ console.log(`Master Node: ${config.isMaster}`);
 if (config.isMaster) {
   registryApp.listen(REGISTRY_PORT, async () => {
     console.log(`✅ Master Node Enabled running on port ${REGISTRY_PORT}`);
+    // Start discovery service
+    await discovery.startMaster();
     // Start the update history loop after registry is running
     updateHistory();
     setInterval(updateHistory, 1000);
   });
 } else {
-  // For non-master nodes, start update immediately
-  updateHistory();
-  setInterval(updateHistory, 1000);
+  // For non-master nodes, discover master and start update
+  try {
+    console.log('Discovering master node...');
+    const masterUrl = await discovery.discoverMaster();
+    config.masterUrl = masterUrl;
+    console.log(`✅ Found master node at ${masterUrl}`);
+    updateHistory();
+    setInterval(updateHistory, 1000);
+  } catch (error) {
+    console.error('Failed to discover master node:', error.message);
+    console.error('Please ensure the master node is running and accessible on the network');
+    process.exit(1);
+  }
 }
 
 const historyLength = 3600; // 1 hour of data (1 data point per second)
@@ -383,15 +399,18 @@ frontendApp.listen(FPORT, () => {
 // kill server monitor this app
 process.on('SIGINT', () => {
   console.log('Inframon is shutting down');
+  discovery.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('Inframon is shutting down');
+  discovery.close();
   process.exit(0);
 });
 
 process.on('SIGKILL', () => {
   console.log('Inframon is being killed');
+  discovery.close();
   process.exit(0);
 });
