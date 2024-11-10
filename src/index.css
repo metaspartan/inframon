@@ -27,11 +27,12 @@ a:hover {
 }
 
 body {
-  margin: 0;
+  /* margin: 0; */
   /* display: flex; */
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* place-items: center;
+  min-width: 320px; */
+  min-height: 100dvh;
+  min-width: 100dvw;
 }
 
 h1 {
@@ -56,7 +57,7 @@ h1 {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 93.4%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;

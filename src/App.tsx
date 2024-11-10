@@ -156,9 +156,10 @@ function App() {
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <NodesContext.Provider value={[nodes, setNodes]}>
           <SidebarProvider>
+          <div className="flex h-screen w-screen overflow-hidden">
             <AppSidebar nodes={nodes} />
-            <div className="bg-background text-foreground min-h-screen">
-              <div className="container mx-auto p-4">
+            <main className="flex-1 overflow-auto">
+              <div className="p-4 w-full">
                 <header className="mb-4 flex justify-between items-center">
                   <SidebarTrigger />
                   <DynamicBreadcrumbs />
@@ -168,7 +169,8 @@ function App() {
                   <Route path="/node/:nodeId" element={<DashboardWrapper />} />
                 </Routes>
               </div>
-            </div>
+            </main>
+          </div>
           </SidebarProvider>
         </NodesContext.Provider>
       </ThemeProvider>

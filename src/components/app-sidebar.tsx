@@ -39,8 +39,8 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
   return (
     <Sidebar>
     <SidebarHeader>
-    <header className="flex justify-between items-center">
-              <Link to="/"><h2 className="text-2xl font-bold dark:text-white text-black ml-1">⚡Inframon</h2></Link>
+    <header className="flex justify-between items-center bg-background dark:bg-background rounded-lg p-2">
+              <Link to="/"><h2 className="text-2xl font-bold dark:text-white text-black ml-1 mb-1">⚡Inframon</h2></Link>
               <ModeToggle />
             </header>
       </SidebarHeader>
@@ -68,7 +68,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
                         <SidebarMenuButton asChild>
                         <Link to={`/node/${node.id}`} className="dark:text-white text-black">
                             <ServerIcon className="h-4 w-4 mr-2" />
-                            <span style={{fontSize: '13px'}}>{node.name}</span>
+                            <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
                             {node.isMaster && <span className="ml-2 text-xs text-yellow-500">(Master)</span>}
                         </Link>
                         </SidebarMenuButton>
@@ -93,7 +93,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
       </SidebarContent>
       <SidebarFooter>
         <p className="text-sm text-muted-foreground mx-auto">Version v0.1.1</p>
-        <a href="https://github.com/metaspartan/servermon" className="hover:underline dark:text-white text-black mx-auto mb-4" target="_blank" rel="noopener noreferrer">Built by Carsen Klock</a>
+        <a href="https://x.com/carsenklock" className="dark:text-white text-black mx-auto mb-4 " target="_blank" rel="noopener noreferrer">🔨 Built by Carsen Klock</a>
       </SidebarFooter>
     </Sidebar>
   )
