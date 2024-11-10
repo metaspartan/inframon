@@ -1,6 +1,6 @@
 # ⚡Inframon
 
-Inframon Server Monitor is a lightweight, real-time local server monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local server nodes that run `cloudflared` tunnels or clusters of Mac Minis. Written by Carsen Klock (@metaspartan)
+Inframon Server Monitor is a lightweight, real-time local server monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local networked nodes that run `cloudflared` tunnels or clusters of Mac Minis for AI/ML workload monitoring. Written by Carsen Klock (@metaspartan)
 
 #### This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
 
@@ -43,7 +43,7 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.
 curl -fsSL https://bun.sh/install | bash
 ```
 
-## Installation on AMD Linux (Ubuntu Recommended)
+## Manual Installation
 
 1. Clone the repository:
    ```
@@ -85,7 +85,9 @@ sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
    After=network.target
 
    [Service]
-   ExecStart=/usr/bin/node /path/to/servermon/servermon.js
+   Environment=IS_MASTER=false
+   Environment=MASTER_URL=http://<your_master_server_ip>:3899
+   ExecStart=/usr/bin/node /path/to/servermon/servermon.ts
    Restart=always
    User=your_username
    Environment=NODE_ENV=production
@@ -94,7 +96,7 @@ sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
    WantedBy=multi-user.target
    ```
 
-   Replace `/path/to/servermon` with the actual path to your Server⚡Monitor installation directory and `your_username` with the appropriate system username.
+   Replace `/path/to/servermon` with the actual path to your Inframon installation directory and `your_username` with the appropriate system username. Also replace `<your_master_server_ip>` with the actual local network IP address of your master server if running multiple machines on a local network. If you are running the master server, set `IS_MASTER=true` and remove the `MASTER_URL` environment variable.
 
 6. Enable and start the service:
    ```
