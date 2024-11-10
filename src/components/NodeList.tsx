@@ -1,4 +1,4 @@
-import { ServerNode } from '@/types';
+import { NodeWithData, ServerNode } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Progress } from './ui/progress';

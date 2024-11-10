@@ -1,22 +1,33 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import Bun from 'bun';
 
-export function compressData(data: any): string {
-  const jsonString = JSON.stringify(data);
-  const buf = Buffer.from(jsonString);
-  const compressed = Bun.gzipSync(buf);
-  return Buffer.from(compressed).toString('base64');
+export function compressData(data: any): string | null {
+  try {
+    if (!data) return null;
+    const jsonString = JSON.stringify(data);
+    if (!jsonString || jsonString === '""') return null;
+    return btoa(jsonString);
+  } catch (error) {
+    console.error('Compression error:', error);
+    return null;
+  }
 }
 
-export function decompressData(compressed: string): any {
+export function decompressData(compressed: string | null | undefined): any {
   try {
-    const buffer = Buffer.from(compressed, 'base64');
-    const decompressed = Bun.gunzipSync(buffer);
-    return JSON.parse(new TextDecoder().decode(decompressed));
+    if (!compressed || compressed === '') {
+      throw new Error('Empty compressed data');
+    }
+    // console.log(compressed);
+    const jsonString = atob(compressed);
+    if (!jsonString || jsonString === '""') {
+      throw new Error('Empty decompressed data');
+    }
+    return JSON.parse(jsonString);
   } catch (error) {
     console.error('Decompression error:', error);
-    throw error;
+    // throw error;
+    return null;
   }
 }
 

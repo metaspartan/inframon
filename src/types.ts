@@ -36,8 +36,11 @@ export interface ServerNode {
   port: number;
   lastSeen: Date;
   isMaster: boolean;
+  compressedData?: string;
+}
+
+export interface NodeWithData extends ServerNode {
   data: ServerData;
-  compressedData?: Uint8Array;
 }
 
 export interface RegistryConfig {

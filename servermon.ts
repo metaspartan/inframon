@@ -43,36 +43,38 @@ const nodes = new Map<string, ServerNode>();
 
 registryApp.post('/api/nodes/register', (req, res) => {
   try {
-    const compressedNode = req.body;
-    if (!compressedNode.compressedData) {
+    const node = req.body;
+    if (!node.compressedData) {
       throw new Error('No compressed data received');
     }
     
-    const decompressedData = decompressData(compressedNode.compressedData);
+    // Store the node with compressed data only
     const newNode: ServerNode = {
-      ...compressedNode,
-      data: decompressedData,
+      id: node.id,
+      name: node.name,
+      ip: node.ip,
+      port: node.port,
       lastSeen: new Date(),
-      compressedData: undefined
+      isMaster: node.isMaster,
+      compressedData: node.compressedData
     };
 
     // Check if a node with this IP already exists (excluding the master node)
     const existingNode = Array.from(nodes.values()).find(
-      node => node.ip === newNode.ip && !node.isMaster
+      n => n.ip === newNode.ip && !n.isMaster
     );
 
     if (existingNode) {
-      // Update the existing node's data instead of creating a new entry
+      // Update the existing node
       existingNode.lastSeen = new Date();
-      existingNode.data = decompressedData;
-      existingNode.name = newNode.name;
+      existingNode.compressedData = node.compressedData;
+      existingNode.name = node.name;
       nodes.set(existingNode.id, existingNode);
-      res.json({ success: true, message: 'Node updated' });
-      return;
+    } else {
+      // Add new node
+      nodes.set(newNode.id, newNode);
     }
 
-    // If no existing node found, add the new node
-    nodes.set(newNode.id, newNode);
     res.json({ success: true, message: 'Node registered' });
   } catch (error) {
     console.error('Error processing node registration:', error);
@@ -84,17 +86,13 @@ registryApp.get('/api/nodes', (req, res) => {
   const activeNodes = Array.from(nodes.values())
     .filter(node => new Date().getTime() - new Date(node.lastSeen).getTime() < 60000)
     .map(node => ({
-      ...node,
-      data: {
-        ...node.data,
-        cpuHistory: node.data.cpuHistory.slice(-60),
-        gpuHistory: node.data.gpuHistory.slice(-60),
-        memoryHistory: node.data.memoryHistory.slice(-60),
-        powerHistory: node.data.powerHistory.slice(-60),
-        networkRxHistory: node.data.networkRxHistory.slice(-60),
-        networkTxHistory: node.data.networkTxHistory.slice(-60),
-        timePoints: node.data.timePoints.slice(-60)
-      }
+      id: node.id,
+      name: node.name,
+      ip: node.ip,
+      port: node.port,
+      lastSeen: node.lastSeen,
+      isMaster: node.isMaster,
+      compressedData: node.compressedData // Send only compressed data
     }));
   res.json(activeNodes);
 });
@@ -108,18 +106,18 @@ registryApp.get('/api/nodes/:nodeId', (req, res) => {
     return;
   }
   
-  const compressedData = {
-    ...node.data,
-    cpuHistory: node.data.cpuHistory.slice(-60),
-    gpuHistory: node.data.gpuHistory.slice(-60),
-    memoryHistory: node.data.memoryHistory.slice(-60),
-    powerHistory: node.data.powerHistory.slice(-60),
-    networkRxHistory: node.data.networkRxHistory.slice(-60),
-    networkTxHistory: node.data.networkTxHistory.slice(-60),
-    timePoints: node.data.timePoints.slice(-60)
-  };
-  
-  res.json(compressedData);
+  try {
+    if (!node.compressedData) {
+      throw new Error('No compressed data available');
+    }
+
+    const data = node;
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error processing node data:', error);
+    res.status(500).json({ error: 'Failed to process node data', details: error.message });
+  }
 });
 
 console.log(`Master Node: ${config.isMaster}`);
@@ -146,21 +144,6 @@ let powerHistory: number[] = [];
 let networkRxHistory: number[] = [];
 let networkTxHistory: number[] = [];
 let timePoints: string[] = [];
-
-function cleanupOldData() {
-  // Keep only last hour of data (3600 points)
-  const maxLength = 3600;
-  
-  if (cpuHistory.length > maxLength) {
-    cpuHistory = cpuHistory.slice(-maxLength);
-    memoryHistory = memoryHistory.slice(-maxLength);
-    powerHistory = powerHistory.slice(-maxLength);
-    networkRxHistory = networkRxHistory.slice(-maxLength);
-    networkTxHistory = networkTxHistory.slice(-maxLength);
-    gpuHistory = gpuHistory.slice(-maxLength);
-    timePoints = timePoints.slice(-maxLength);
-  }
-}
 
 async function updateHistory() {
   const now = new Date();
@@ -217,6 +200,16 @@ async function updateHistory() {
 
   // Handle node registration based on master/slave status
   if (config.isMaster) {
+    const compressedData = {
+      ...serverData,
+      cpuHistory: serverData.cpuHistory.slice(-60),
+      gpuHistory: serverData.gpuHistory.slice(-60),
+      memoryHistory: serverData.memoryHistory.slice(-60),
+      powerHistory: serverData.powerHistory.slice(-60),
+      networkRxHistory: serverData.networkRxHistory.slice(-60),
+      networkTxHistory: serverData.networkTxHistory.slice(-60),
+      timePoints: serverData.timePoints.slice(-60)
+    };
     // Master node updates its own data in the registry
     const node: ServerNode = {
       id: nodeId,
@@ -225,9 +218,10 @@ async function updateHistory() {
       port: config.nodePort,
       lastSeen: new Date(),
       isMaster: true,
-      data: serverData
+      compressedData: compressData(compressedData) ?? ''
     };
     nodes.set(nodeId, node);
+
   } else {
     // Slave nodes register with master
     await registerWithMaster(serverData);
@@ -243,14 +237,18 @@ async function registerWithMaster(serverData: ServerData) {
       // Take only last 60 points for histories
       const compressedData = {
         ...serverData,
-        cpuHistory: serverData.cpuHistory.slice(-60),
-        gpuHistory: serverData.gpuHistory.slice(-60),
-        memoryHistory: serverData.memoryHistory.slice(-60),
-        powerHistory: serverData.powerHistory.slice(-60),
-        networkRxHistory: serverData.networkRxHistory.slice(-60),
-        networkTxHistory: serverData.networkTxHistory.slice(-60),
-        timePoints: serverData.timePoints.slice(-60)
+        // cpuHistory: serverData.cpuHistory.slice(-60),
+        // gpuHistory: serverData.gpuHistory.slice(-60),
+        // memoryHistory: serverData.memoryHistory.slice(-60),
+        // powerHistory: serverData.powerHistory.slice(-60),
+        // networkRxHistory: serverData.networkRxHistory.slice(-60),
+        // networkTxHistory: serverData.networkTxHistory.slice(-60),
+        // timePoints: serverData.timePoints.slice(-60)
       };
+
+      console.log('Compressed Data:', JSON.stringify(compressedData, null, 2));
+
+      // console.log('Data before compression:', JSON.stringify(serverData, null, 2));
 
       const node = {
         id: nodeId,
@@ -259,7 +257,6 @@ async function registerWithMaster(serverData: ServerData) {
         port: config.nodePort,
         lastSeen: new Date(),
         isMaster: false,
-        data: undefined,
         compressedData: compressData(compressedData)
       };
 
