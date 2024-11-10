@@ -1,7 +1,10 @@
-# Server⚡Monitor
+# Infra⚡Mon
 
-Server⚡Monitor is a lightweight, real-time server monitoring application that provides a sleek local dashboard for tracking various system metrics, particularly useful for local server nodes that run `cloudflared` tunnels. Written by Carsen Klock (@metaspartan)
+Inframon Server⚡Monitor is a lightweight, real-time server monitoring application that provides a sleek local dashboard for tracking various system metrics, particularly useful for local server nodes that run `cloudflared` tunnels or clusters of Mac Minis. Written by Carsen Klock (@metaspartan)
 
+This is intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
+
+![Inframon](dashboard.png)
 ![Server Monitor Dashboard](screenshotdual.png)
 
 ## Features
