@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ServerData } from '../types';
 import Bun from 'bun';
 
 export function compressData(data: any): string {
@@ -14,7 +13,7 @@ export function decompressData(compressed: string): any {
   try {
     const buffer = Buffer.from(compressed, 'base64');
     const decompressed = Bun.gunzipSync(buffer);
-    return JSON.parse(decompressed.toString());
+    return JSON.parse(new TextDecoder().decode(decompressed));
   } catch (error) {
     console.error('Decompression error:', error);
     throw error;
