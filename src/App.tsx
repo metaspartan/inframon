@@ -15,7 +15,10 @@ function DashboardWrapper() {
   useEffect(() => {
     const fetchNodeData = async () => {
       try {
-        const data = await fetchServerData();
+        const hostname = window.location.hostname;
+        const data = nodeId 
+          ? await fetch(`http://${hostname}:3899/api/nodes/${nodeId}`).then(res => res.json())
+          : await fetchServerData();
         setServerData(data);
       } catch (error) {
         console.error('Error fetching node data:', error);
@@ -25,7 +28,7 @@ function DashboardWrapper() {
     fetchNodeData();
     const interval = setInterval(fetchNodeData, 1000);
     return () => clearInterval(interval);
-  }, [nodeId]);
+  }, [nodeId]); // Add nodeId to dependency array
 
   if (!serverData) {
     return <p className="text-center">Loading node data...</p>;

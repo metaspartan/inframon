@@ -51,6 +51,18 @@ registryApp.get('/api/nodes', (req, res) => {
   res.json(activeNodes);
 });
 
+registryApp.get('/api/nodes/:nodeId', (req, res) => {
+  const { nodeId } = req.params;
+  const node = nodes.get(nodeId);
+  
+  if (!node || new Date().getTime() - new Date(node.lastSeen).getTime() >= 60000) {
+    res.status(404).json({ error: 'Node not found or inactive' });
+    return;
+  }
+  
+  res.json(node.data);
+});
+
 console.log(`Master Node: ${config.isMaster}`);
 
 // Start registry server first if master

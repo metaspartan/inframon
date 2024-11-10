@@ -3,6 +3,8 @@ Description=Server Monitor Service
 After=network.target
 
 [Service]
+Environment=IS_MASTER=false
+Environment=MASTER_URL=http://192.168.1.250:3899
 ExecStart=/usr/bin/bun run /home/ghost/servermon/servermon.ts
 WorkingDirectory=/home/ghost/servermon
 Restart=always

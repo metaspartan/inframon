@@ -9,9 +9,8 @@
     "compile-master": "IS_MASTER=true bun build --compile servermon.ts",
     "compile-node": "IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun build --compile servermon.ts",
     "build": "tsc && vite build",
-    "all": "bun run build && bun run servermon.ts",
-    "master": "sudo IS_MASTER=true bun run servermon.ts",
-    "node": "sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts",
+    "master": "bun run build && sudo IS_MASTER=true bun run servermon.ts",
+    "node": "bun run build && sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
