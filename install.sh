@@ -58,21 +58,16 @@ bun install
 print_status "Configuration setup..."
 
 # Ask if this is a master node
-while true; do
-    read -p "Is this a master node? (If this is your first node, it should be master) (y/n): " is_master
-    case $is_master in
-        [Yy]* ) 
-            IS_MASTER=true
-            break
-            ;;
-        [Nn]* ) 
-            IS_MASTER=false
-            # Auto-discovery will handle master URL
-            break
-            ;;
-        * ) echo "Please answer yes or no.";;
-    esac
+read -p "Is this a master node? (If this is your first node, it should be master) (y/n): " is_master
+while [[ ! $is_master =~ ^[YyNn]$ ]]; do
+    read -p "Please answer y or n: " is_master
 done
+
+if [[ $is_master =~ ^[Yy]$ ]]; then
+    IS_MASTER=true
+else
+    IS_MASTER=false
+fi
 
 # Create .env file
 print_status "Creating .env file..."
