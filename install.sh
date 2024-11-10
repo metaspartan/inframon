@@ -131,7 +131,7 @@ EOF
                 fi
 
                 cat >> /etc/systemd/system/inframon.service << EOF
-ExecStart=/root/.bun/bin/bun run $(pwd)/inframon.ts
+ExecStart=/usr/bin/bun run $(pwd)/inframon.ts
 WorkingDirectory=$(pwd)
 Restart=always
 User=$CURRENT_USER
