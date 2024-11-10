@@ -3,9 +3,9 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/metaspartan/inframon?style=social)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/metaspartan)
 
-Inframon Server Monitor is a lightweight, real-time local server networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics, particularly useful for local networked nodes that run `cloudflared` tunnels or clusters of Mac Minis for AI/ML workload monitoring. Auto Master Node Local Network Discovery is supported (multiple nodes supported). Written by Carsen Klock (@metaspartan)
+Inframon Server Monitor is a lightweight, real-time local networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics through a local web interface. Auto Master Node Local Network Discovery is supported (multiple devices supported). Written by Carsen Klock
 
-#### This is currently intended only to be used with Linux AMD machines with ROCm GPU drivers installed OR Apple Silicon Macs (any M-series chip)
+#### This is currently intended only to be used with Apple Silicon Macs (any M-series chip) OR Linux AMD machines with ROCm GPU drivers installed.
 
 #### TODO: Linux NVIDIA Support
 
@@ -17,7 +17,7 @@ See [install.sh](install.sh) for a simple install script that handles all the ma
 curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
 ```
 
-(Setup your master node first, then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network)
+(Setup your master node first ("Y" on first prompt), then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network, ensure the install.sh is ran with sudo from a user with sudo access).
 
 ![Inframon](animated.gif)
 
@@ -36,12 +36,16 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/mai
 - Local Networked Node list with power usage, cpu usage, memory usage, and more
 - Master and Node modes (One master, for multiple nodes)
 - Install script for easy setup
-- Auto Master Node Local Network Discovery (No need to manually set the master URL on each node)
+- Auto Master Node Local Network Discovery
 
 ## Supported Platforms and Devices
 
 - MacOS (Apple Silicon)
 - Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
+
+## Requirements
+- Bun (https://bun.sh)
+- Local Network Access (Master and Nodes)
 
 ## Install Script
 
@@ -128,7 +132,7 @@ http://192.168.1.250:3869
 
 ## Usage
 
-Once the service is running, you can access the ⚡Inframon dashboard by opening a web browser and navigating to:
+Once a master server Inframon service is running, you can access the ⚡Inframon dashboard by opening a web browser and navigating to:
 
 ```
 http://192.168.1.250:3869
@@ -138,4 +142,4 @@ Replace `192.168.1.250` with the actual local network IP address of your master 
 
 ## Configuration
 
-You can create a new `.env` file to configure the master and node servers. See [.env.example](.env.example) for more information.
+You can create a new `.env` file to configure the master and node servers. See [.env.example](.env.example) for more information. (Note: The install script will handle creating the `.env` file for you)
