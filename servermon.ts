@@ -202,13 +202,13 @@ async function updateHistory() {
   if (config.isMaster) {
     const compressedData = {
       ...serverData,
-      cpuHistory: serverData.cpuHistory.slice(-60),
-      gpuHistory: serverData.gpuHistory.slice(-60),
-      memoryHistory: serverData.memoryHistory.slice(-60),
-      powerHistory: serverData.powerHistory.slice(-60),
-      networkRxHistory: serverData.networkRxHistory.slice(-60),
-      networkTxHistory: serverData.networkTxHistory.slice(-60),
-      timePoints: serverData.timePoints.slice(-60)
+      // cpuHistory: serverData.cpuHistory.slice(-60),
+      // gpuHistory: serverData.gpuHistory.slice(-60),
+      // memoryHistory: serverData.memoryHistory.slice(-60),
+      // powerHistory: serverData.powerHistory.slice(-60),
+      // networkRxHistory: serverData.networkRxHistory.slice(-60),
+      // networkTxHistory: serverData.networkTxHistory.slice(-60),
+      // timePoints: serverData.timePoints.slice(-60)
     };
     // Master node updates its own data in the registry
     const node: ServerNode = {
@@ -237,13 +237,13 @@ async function registerWithMaster(serverData: ServerData) {
       // Take only last 60 points for histories
       const compressedData = {
         ...serverData,
-        cpuHistory: serverData.cpuHistory.slice(-60),
-        gpuHistory: serverData.gpuHistory.slice(-60),
-        memoryHistory: serverData.memoryHistory.slice(-60),
-        powerHistory: serverData.powerHistory.slice(-60),
-        networkRxHistory: serverData.networkRxHistory.slice(-60),
-        networkTxHistory: serverData.networkTxHistory.slice(-60),
-        timePoints: serverData.timePoints.slice(-60)
+        // cpuHistory: serverData.cpuHistory.slice(-60),
+        // gpuHistory: serverData.gpuHistory.slice(-60),
+        // memoryHistory: serverData.memoryHistory.slice(-60),
+        // powerHistory: serverData.powerHistory.slice(-60),
+        // networkRxHistory: serverData.networkRxHistory.slice(-60),
+        // networkTxHistory: serverData.networkTxHistory.slice(-60),
+        // timePoints: serverData.timePoints.slice(-60)
       };
 
       // console.log('Compressed Data:', JSON.stringify(compressedData, null, 2));
