@@ -14,7 +14,9 @@ Inframon Server Monitor is a lightweight, real-time local networked monitoring a
 See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
 
 ```
-curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh -o inframon-install.sh
+chmod +x inframon-install.sh
+sudo ./inframon-install.sh
 ```
 
 (Setup your master node first ("Y" on first prompt), then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network, ensure the install.sh is ran with sudo from a user with sudo access).
@@ -52,7 +54,9 @@ curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/mai
 See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
 
 ```
-curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh -o inframon-install.sh
+chmod +x inframon-install.sh
+sudo ./inframon-install.sh
 ```
 
 (Setup your master node first, then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network)

@@ -79,8 +79,11 @@ fi
 
 # Ensure if old install exists, unload it if darwin
 if [[ "$(uname)" == "Darwin" ]]; then
-    launchctl bootout system/com.inframon.service 2>/dev/null || true
-    launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
+    if [[ -f /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist ]]; then
+        print_status "Removing old launchd service..."
+        launchctl bootout system/com.inframon.service 2>/dev/null || true
+        launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
+    fi
 fi
 
 # print_status "Ensuring auto master node discovery is allowed through firewall..."
@@ -194,6 +197,10 @@ echo "The target user's UID is: $USER_UID"
 
 # Create the plist file (needs sudo)
 sudo -u "$SUDO_USER" mkdir -p "$PLIST_DIR"
+
+# Create the plist log files
+sudo -u "$SUDO_USER" touch "${APP_DIR}/inframon.stdout.log"
+sudo -u "$SUDO_USER" touch "${APP_DIR}/inframon.stderr.log"
 
 # Create the plist file as the target user
 sudo -u "$SUDO_USER" tee "$PLIST_PATH" > /dev/null << EOF
