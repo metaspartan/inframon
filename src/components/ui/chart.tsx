@@ -20,7 +20,7 @@ const timeRanges = [
 ]
 
 export function Chart({ data, timePoints, title, color, unit }: ChartProps) {
-  const [timeRange, setTimeRange] = React.useState("5m")
+  const [timeRange, setTimeRange] = React.useState("1m")
 
   const getDataPointsCount = (range: string) => {
     switch (range) {
