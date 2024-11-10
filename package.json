@@ -5,13 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "bun run servermon.ts",
-    "compile": "bun build --compile servermon.ts",
-    "compile-master": "IS_MASTER=true bun build --compile servermon.ts",
-    "compile-node": "IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun build --compile servermon.ts",
+    "server": "bun run inframon.ts",
+    "compile": "bun build --compile inframon.ts",
     "build": "tsc && vite build",
-    "master": "bun run build && sudo IS_MASTER=true bun run servermon.ts",
-    "node": "bun run build && sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -54,7 +50,7 @@
     "eslint-plugin-react-refresh": "^0.3.4",
     "postcss": "^8.4.23",
     "tailwindcss": "^3.3.2",
-    "typescript": "^5.0.2",
+    "typescript": "^5.6.3",
     "vite": "^4.3.2"
   }
 }

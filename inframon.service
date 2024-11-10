@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Environment=IS_MASTER=false
 Environment=MASTER_URL=http://192.168.1.250:3899
-ExecStart=/usr/bin/bun run /home/ghost/servermon/servermon.ts
-WorkingDirectory=/home/ghost/servermon
+ExecStart=/usr/bin/bun run /home/ghost/inframon/inframon.ts
+WorkingDirectory=/home/ghost/inframon
 Restart=always
 User=ghost
 Environment=NODE_ENV=production

@@ -47,8 +47,8 @@ fi
 
 # Clone repository
 print_status "Cloning Inframon repository..."
-git clone https://github.com/metaspartan/servermon.git
-cd servermon
+git clone https://github.com/metaspartan/inframon.git
+cd inframon
 
 # Install node dependencies
 print_status "Installing dependencies..."
@@ -125,7 +125,7 @@ EOF
                 fi
 
                 cat >> /etc/systemd/system/inframon.service << EOF
-ExecStart=/root/.bun/bin/bun run $(pwd)/servermon.ts
+ExecStart=/root/.bun/bin/bun run $(pwd)/inframon.ts
 WorkingDirectory=$(pwd)
 Restart=always
 User=$CURRENT_USER

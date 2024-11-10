@@ -11,7 +11,7 @@ Inframon Server Monitor is a lightweight, real-time local server monitoring appl
 See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
 
 ```
-curl -fsSL https://raw.githubusercontent.com/metaspartan/servermon/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | bash
 ```
 
 ![Inframon](inframon.png)
@@ -47,8 +47,8 @@ curl -fsSL https://bun.sh/install | bash
 
 1. Clone the repository:
    ```
-   git clone https://github.com/metaspartan/servermon.git
-   cd servermon
+   git clone https://github.com/metaspartan/inframon.git
+   cd inframon
    ```
 
 2. Install dependencies:
@@ -64,7 +64,7 @@ curl -fsSL https://bun.sh/install | bash
 4. Setup the master server:
 
 ```
-sudo IS_MASTER=true bun run servermon.ts
+sudo IS_MASTER=true bun run inframon.ts
 ```
 
 For running multiple machines on a local network:
@@ -73,11 +73,11 @@ For running multiple machines on a local network:
 4. Setup the node server (replace `192.168.1.250` with your master server's local IP address), master runs on port 3899:
 
 ```
-sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
+sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run inframon.ts
 ```
 
 5. Optional: Set up the systemd service (if AMD Linux):
-   Create a new file named `servermon.service` in `/etc/systemd/system/` with the following content (edited to your needs):
+   Create a new file named `inframon.service` in `/etc/systemd/system/` with the following content (edited to your needs):
 
    ```
    [Unit]
@@ -87,7 +87,7 @@ sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
    [Service]
    Environment=IS_MASTER=false
    Environment=MASTER_URL=http://<your_master_server_ip>:3899
-   ExecStart=/usr/bin/node /path/to/servermon/servermon.ts
+   ExecStart=/usr/bin/node /path/to/inframon/inframon.ts
    Restart=always
    User=your_username
    Environment=NODE_ENV=production
@@ -96,12 +96,12 @@ sudo IS_MASTER=false MASTER_URL=http://192.168.1.250:3899 bun run servermon.ts
    WantedBy=multi-user.target
    ```
 
-   Replace `/path/to/servermon` with the actual path to your Inframon installation directory and `your_username` with the appropriate system username. Also replace `<your_master_server_ip>` with the actual local network IP address of your master server if running multiple machines on a local network. If you are running the master server, set `IS_MASTER=true` and remove the `MASTER_URL` environment variable.
+   Replace `/path/to/inframon` with the actual path to your Inframon installation directory and `your_username` with the appropriate system username. Also replace `<your_master_server_ip>` with the actual local network IP address of your master server if running multiple machines on a local network. If you are running the master server, set `IS_MASTER=true` and remove the `MASTER_URL` environment variable.
 
 6. Enable and start the service:
    ```
-   sudo systemctl enable servermon.service
-   sudo systemctl start servermon.service
+   sudo systemctl enable inframon.service
+   sudo systemctl start inframon.service
    ```
 
 7. Open a web browser on your local network and navigate to your master server's local IP address:

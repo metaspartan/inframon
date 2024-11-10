@@ -81,7 +81,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
               <SidebarGroupLabel>Download or Contribute</SidebarGroupLabel>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                    <a href="https://github.com/metaspartan/servermon" className="dark:text-white text-black" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/metaspartan/inframon" className="dark:text-white text-black" target="_blank" rel="noopener noreferrer">
                     <GitHubLogoIcon />
                     <span>Github</span>
                     </a>
