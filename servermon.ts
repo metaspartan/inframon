@@ -259,17 +259,15 @@ async function registerWithMaster(serverData: ServerData) {
         port: config.nodePort,
         lastSeen: new Date(),
         isMaster: false,
-        data: compressedData,
-        compressedData: compressData(compressedData)
+        compressedData: compressData(compressedData)  // This will now be a base64 string
       };
 
       const response = await fetch(`${config.masterUrl}/api/nodes/register`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Content-Encoding': 'gzip'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ...node, data: undefined })  // Send only compressed data
+        body: JSON.stringify(node)
       });
 
       if (!response.ok) {
