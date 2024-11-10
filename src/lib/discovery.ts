@@ -12,6 +12,7 @@ export class NodeDiscovery {
       socket.on('data', async (data) => {
         if (data.toString() === 'INFRAMON_DISCOVERY') {
           const localIp = await getLocalIp();
+          console.log(`Received discovery request from ${socket.remoteAddress}`);
           const response = JSON.stringify({
             type: 'MASTER_ANNOUNCE',
             url: `http://${localIp}:3899`
@@ -21,9 +22,9 @@ export class NodeDiscovery {
         }
       });
     });
-
+  
     this.server.listen(DISCOVERY_PORT, '0.0.0.0', () => {
-      console.log('Master discovery service started');
+      console.log(`Master discovery service started on port ${DISCOVERY_PORT}`);
     });
   }
 
@@ -33,74 +34,95 @@ export class NodeDiscovery {
       const maxAttempts = 5;
       const timeout = 2000;
       const subnet = this.getSubnet();
-
+      let activeConnections = 0;
+      const maxConcurrentConnections = 50;
+      let foundMaster = false;
+  
       const attemptDiscovery = async (ip: string) => {
+        if (foundMaster) return;
+        
         try {
           const socket = new net.Socket();
-          const connectPromise = new Promise<void>((resolve, reject) => {
-            socket.setTimeout(500); // 500ms timeout per connection attempt
-            
-            socket.on('connect', () => {
-              socket.write('INFRAMON_DISCOVERY');
-            });
-
-            socket.on('data', (data) => {
-              try {
-                const response = JSON.parse(data.toString());
-                if (response.type === 'MASTER_ANNOUNCE') {
-                  this.masterUrl = response.url;
-                  socket.end();
-                  resolve();
-                }
-              } catch (err) {
-                socket.end();
-                reject(err);
-              }
-            });
-
-            socket.on('timeout', () => {
-              socket.destroy();
-              reject(new Error('Connection timeout'));
-            });
-
-            socket.on('error', () => {
-              socket.destroy();
-              reject(new Error('Connection failed'));
-            });
+          activeConnections++;
+  
+          const cleanup = () => {
+            activeConnections--;
+            socket.destroy();
+            if (activeConnections === 0 && attempts >= maxAttempts && !foundMaster) {
+              reject(new Error('No master node found after all attempts'));
+            }
+          };
+  
+          socket.setTimeout(1000); // 1 second timeout
+  
+          socket.on('connect', () => {
+            console.log(`Attempting connection to potential master at ${ip}`);
+            socket.write('INFRAMON_DISCOVERY');
           });
-
+  
+          socket.on('data', (data) => {
+            try {
+              const response = JSON.parse(data.toString());
+              if (response.type === 'MASTER_ANNOUNCE') {
+                foundMaster = true;
+                this.masterUrl = response.url;
+                console.log(`Found master at ${response.url}`);
+                cleanup();
+                resolve(response.url);
+              }
+            } catch (err) {
+              cleanup();
+            }
+          });
+  
+          socket.on('timeout', () => {
+            cleanup();
+          });
+  
+          socket.on('error', () => {
+            cleanup();
+          });
+  
           socket.connect(DISCOVERY_PORT, ip);
-          await connectPromise;
-          if (this.masterUrl) {
-            resolve(this.masterUrl);
-            return true;
-          }
         } catch (error) {
-          return false;
+          activeConnections--;
         }
-        return false;
       };
-
+  
       const scanNetwork = async () => {
-        if (attempts >= maxAttempts) {
-          reject(new Error('No master node found'));
+        if (attempts >= maxAttempts || foundMaster) {
+          if (!foundMaster) {
+            reject(new Error('No master node found'));
+          }
           return;
         }
-
+  
         attempts++;
-        
-        // Scan the last octet of the subnet
-        for (let i = 1; i <= 254; i++) {
-          const ip = `${subnet}${i}`;
-          if (await attemptDiscovery(ip)) {
-            return;
+        console.log(`Scanning network attempt ${attempts}/${maxAttempts}...`);
+  
+        // Scan in batches to avoid too many concurrent connections
+        for (let i = 1; i <= 254; i += maxConcurrentConnections) {
+          if (foundMaster) break;
+          
+          const promises = [];
+          for (let j = i; j < i + maxConcurrentConnections && j <= 254; j++) {
+            const ip = `${subnet}${j}`;
+            promises.push(attemptDiscovery(ip));
+          }
+          
+          await Promise.all(promises);
+          
+          if (!foundMaster) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s between batches
           }
         }
-
-        setTimeout(scanNetwork, timeout);
+  
+        if (!foundMaster) {
+          setTimeout(scanNetwork, timeout);
+        }
       };
-
-      scanNetwork();
+  
+      scanNetwork().catch(reject);
     });
   }
 
