@@ -147,6 +147,7 @@ EOF
                 # Enable and start service
                 systemctl daemon-reload
                 systemctl enable inframon.service
+                systemctl stop inframon.service
                 systemctl start inframon.service
                 
                 print_status "Systemd service installed and started"
@@ -252,6 +253,8 @@ sudo launchctl limit maxfiles 2147483646 2147483646
 print_status "Loading the service..."
 
 # Load the LaunchAgent
+sudo -u "$SUDO_USER" launchctl unload -w "$PLIST_PATH"
+
 sudo -u "$SUDO_USER" launchctl load -w "$PLIST_PATH"
 
 sudo -u "$SUDO_USER" launchctl enable gui/$USER_UID/com.inframon.service
