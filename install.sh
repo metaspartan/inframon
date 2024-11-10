@@ -46,9 +46,9 @@ if ! command -v bun &> /dev/null; then
 fi
 
 # Clone repository
-# print_status "Cloning Inframon repository..."
-# git clone https://github.com/metaspartan/inframon.git
-# cd inframon
+print_status "Cloning Inframon repository..."
+git clone https://github.com/metaspartan/inframon.git
+cd inframon
 
 # Install node dependencies
 print_status "Installing dependencies..."
