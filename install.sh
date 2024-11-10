@@ -20,11 +20,9 @@ print_warning() {
 }
 
 # Check if running as root
-if [[ "$(uname)" == "Linux" ]]; then
 if [ "$EUID" -ne 0 ]; then 
-    print_error "Please run as root (use sudo)"
+    print_error "Please run install.sh with (use sudo), You must be logged in as the user you want to run the service as."
     exit 1
-fi
 fi
 
 # Check system type
@@ -98,9 +96,9 @@ fi
 
 # Build the application
 print_status "Building application..."
-bun run build
 
 if [[ $IS_MASTER == true ]]; then
+    bun run build
     bun run compile
 else
     bun run compile
@@ -170,6 +168,7 @@ elif [[ "$OS_TYPE" == "macos" ]]; then
                 fi
                 
 # Create LaunchDaemon plist file
+PLIST_DIR="/Users/${CURRENT_USER}/Library/LaunchAgents"
 PLIST_PATH="/Users/${CURRENT_USER}/Library/LaunchAgents/com.inframon.service.plist"
 APP_DIR=$(pwd)
 # Verify binary exists and is executable
@@ -187,8 +186,18 @@ fi
 # Make binary executable
 # sudo chmod +x "$BINARY_PATH"
 
-# Create the plist file
-cat > "$PLIST_PATH" << EOF
+CURRENT_UID=$(id -u)
+USER_UID=$(id -u "$SUDO_USER")
+
+# Output the UID (optional)
+echo "The current user's UID is: $CURRENT_UID"
+echo "The target user's UID is: $USER_UID"
+
+# Create the plist file (needs sudo)
+sudo -u "$SUDO_USER" mkdir -p "$PLIST_DIR"
+
+# Create the plist file as the target user
+sudo -u "$SUDO_USER" tee "$PLIST_PATH" > /dev/null << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -234,28 +243,26 @@ cat >> "$PLIST_PATH" << EOF
 </plist>
 EOF
 
-# Set permissions and ownership
-# sudo chown root:wheel "$PLIST_PATH"
-# sudo chmod 644 "$PLIST_PATH"
-# sudo chown root:wheel "$BINARY_PATH"
-# sudo chmod 755 "$BINARY_PATH"
 
-# launchctl limit maxfiles 2147483646 2147483646
-
-# Unload and load the service
-# sudo launchctl bootout system/com.inframon.service 2>/dev/null || true
-# sudo launchctl bootstrap system "$PLIST_PATH"
+sudo launchctl limit maxfiles 2147483646 2147483646
 
 print_status "Loading the service..."
-# These must be ran WITHOUT sudo
-launchctl load -w $PLIST_PATH
-launchctl enable system/com.inframon.service
-launchctl start com.inframon.service
+
+# Load the LaunchAgent
+sudo -u "$SUDO_USER" launchctl load -w "$PLIST_PATH"
+
+sudo -u "$SUDO_USER" launchctl enable gui/$USER_UID/com.inframon.service
+
+sudo -u "$SUDO_USER" launchctl start gui/$USER_UID/com.inframon.service
+
+# Check the status of the service
+sudo -u "$SUDO_USER" launchctl list | grep com.inframon.service
+
 
 # Verify the service status
 print_status "Verifying service status..."
 
-if sudo launchctl print system/com.inframon.service 2>/dev/null; then
+if sudo launchctl print gui/$USER_UID/com.inframon.service 2>/dev/null; then
     print_status "Service is loaded"
             if pgrep -f "inframon"; then
                 print_status "Inframon launchd process is running!"
@@ -301,5 +308,5 @@ if [[ "$(uname)" == "Linux" ]]; then
 fi
 if [[ "$(uname)" == "Darwin" ]]; then
     print_warning "Note: If you installed the launchd service, the application is running in the background."
-    print_warning "You can check the status with: sudo launchctl print system/com.inframon.service"
+    print_warning "You can check the status with: sudo launchctl print gui/$USER_UID/com.inframon.service"
 fi

@@ -1,3 +1,7 @@
+// Copyright 2024 Carsen Klock
+// Licensed under the MIT License
+// https://github.com/metaspartan/inframon
+
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -20,11 +24,11 @@ import {
   isCloudflaredRunning,
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
-import { compressData, decompressData } from './src/lib/utils';
+import { compressData } from './src/lib/utils';
 
 const nodeId = uuidv4();
 const app = express();
-// const port = 3800;
+
 const port = config.nodePort;
 const FRONTEND_PORT = config.frontendPort;
 
@@ -41,22 +45,22 @@ registryApp.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const nodes = new Map<string, ServerNode>();
 
-function downsampleData(data: number[], timePoints: string[], targetPoints: number) {
-  if (data.length <= targetPoints) return { data, timePoints };
+// function downsampleData(data: number[], timePoints: string[], targetPoints: number) {
+//   if (data.length <= targetPoints) return { data, timePoints };
   
-  const factor = Math.floor(data.length / targetPoints);
-  const downsampled = [];
-  const downsampledTime = [];
+//   const factor = Math.floor(data.length / targetPoints);
+//   const downsampled = [];
+//   const downsampledTime = [];
   
-  for (let i = 0; i < data.length; i += factor) {
-    const chunk = data.slice(i, i + factor);
-    const avg = chunk.reduce((a, b) => a + b, 0) / chunk.length;
-    downsampled.push(avg as never);
-    downsampledTime.push(timePoints[i] as never);
-  }
+//   for (let i = 0; i < data.length; i += factor) {
+//     const chunk = data.slice(i, i + factor);
+//     const avg = chunk.reduce((a, b) => a + b, 0) / chunk.length;
+//     downsampled.push(avg as never);
+//     downsampledTime.push(timePoints[i] as never);
+//   }
   
-  return { data: downsampled, timePoints: downsampledTime };
-}
+//   return { data: downsampled, timePoints: downsampledTime };
+// }
 
 registryApp.post('/api/nodes/register', (req, res) => {
   try {
@@ -219,13 +223,13 @@ async function updateHistory() {
   if (config.isMaster) {
     const compressedData = {
       ...serverData,
-      cpuHistory: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).data,
-      gpuHistory: downsampleData(serverData.gpuHistory, serverData.timePoints, 360).data,
-      memoryHistory: downsampleData(serverData.memoryHistory, serverData.timePoints, 360).data,
-      powerHistory: downsampleData(serverData.powerHistory, serverData.timePoints, 360).data,
-      networkRxHistory: downsampleData(serverData.networkRxHistory, serverData.timePoints, 360).data,
-      networkTxHistory: downsampleData(serverData.networkTxHistory, serverData.timePoints, 360).data,
-      timePoints: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).timePoints,
+      // cpuHistory: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).data,
+      // gpuHistory: downsampleData(serverData.gpuHistory, serverData.timePoints, 360).data,
+      // memoryHistory: downsampleData(serverData.memoryHistory, serverData.timePoints, 360).data,
+      // powerHistory: downsampleData(serverData.powerHistory, serverData.timePoints, 360).data,
+      // networkRxHistory: downsampleData(serverData.networkRxHistory, serverData.timePoints, 360).data,
+      // networkTxHistory: downsampleData(serverData.networkTxHistory, serverData.timePoints, 360).data,
+      // timePoints: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).timePoints,
       // timePoints: serverData.timePoints.slice(-60)
     };
     // Master node updates its own data in the registry

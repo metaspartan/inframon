@@ -11,7 +11,7 @@ Inframon Server Monitor is a lightweight, real-time local server monitoring appl
 See [install.sh](install.sh) for a simple install script that handles all the manual steps below.
 
 ```
-curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/metaspartan/inframon/refs/heads/main/install.sh | sudo bash
 ```
 
 ![Inframon](inframon.png)
