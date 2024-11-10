@@ -1,4 +1,4 @@
-import { NodeWithData, ServerNode } from '@/types';
+import { NodeWithData } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Progress } from './ui/progress';
@@ -7,7 +7,7 @@ import { BsGpuCard, BsFillNvmeFill } from "react-icons/bs";
 import { FaMemory, FaEthernet, FaCloudflare } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function NodeList({ nodes }: { nodes: ServerNode[] }) {
+export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
   const navigate = useNavigate();
   const isAppleSilicon = (cpuModel: string) => cpuModel.toLowerCase().includes('apple');
 
@@ -19,7 +19,7 @@ export function NodeList({ nodes }: { nodes: ServerNode[] }) {
     );
   }
 
-  const sortNodesWithMasterFirst = (nodes: ServerNode[]) => {
+  const sortNodesWithMasterFirst = (nodes: NodeWithData[]) => {
     return [...nodes].sort((a, b) => {
       if (a.isMaster && !b.isMaster) return -1;
       if (!a.isMaster && b.isMaster) return 1;
