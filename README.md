@@ -1,5 +1,5 @@
 # ⚡Inframon
-![GitHub](https://img.shields.io/github/license/metaspartan/inframon)
+![GitHub](https://img.shields.io/github/license/metaspartan/inframon?color=green)
 ![GitHub Repo stars](https://img.shields.io/github/stars/metaspartan/inframon?style=social)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/metaspartan)
 
