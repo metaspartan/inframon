@@ -11,8 +11,14 @@ export function compressData(data: any): string | null {
     const uint8Array = new TextEncoder().encode(jsonString);
     // Use deflateRaw instead of deflate
     const compressed = pako.deflateRaw(uint8Array);
-    // Convert to base64
-    return btoa(String.fromCharCode.apply(null, compressed));
+    // Convert to base64 in chunks to avoid call stack size exceeded
+    const chunkSize = 8192;
+    let result = '';
+    for (let i = 0; i < compressed.length; i += chunkSize) {
+      const chunk = compressed.slice(i, i + chunkSize);
+      result += String.fromCharCode.apply(null, chunk);
+    }
+    return btoa(result);
   } catch (error) {
     console.error('Compression error:', error);
     return null;
