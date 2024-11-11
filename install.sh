@@ -42,9 +42,13 @@ print_status "Installing dependencies..."
 if ! command -v bun &> /dev/null; then
     print_status "Installing Bun..."
     curl -fsSL https://bun.sh/install | sudo bash
-    sudo source ~/.bashrc
-    export BUN_INSTALL="$HOME/.bun" 
-    export PATH="$BUN_INSTALL/bin:$PATH" 
+    if [[ "$OS_TYPE" == "macos" ]]; then
+        export BUN_INSTALL="$HOME/.bun" 
+        export PATH="$BUN_INSTALL/bin:$PATH" 
+    fi
+    if [[ "$OS_TYPE" == "linux" ]]; then
+        source ~/.bashrc
+    fi
 fi
 
 # Clone repository
