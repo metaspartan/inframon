@@ -51,6 +51,12 @@ if ! command -v bun &> /dev/null; then
     fi
 fi
 
+# Install linux-common-tools
+if [[ "$OS_TYPE" == "linux" ]]; then
+    print_status "Installing linux-common-tools..."
+    sudo apt install linux-common-tools -y
+fi
+
 # Clone repository
 print_status "Cloning Inframon repository..."
 if [ -n "$SUDO_USER" ]; then

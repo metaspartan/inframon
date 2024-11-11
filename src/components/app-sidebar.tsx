@@ -19,7 +19,8 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { ServerNode } from "@/types";
 import { FaApple, FaLinux } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
-
+import { sortNodes } from "@/lib/sorting";
+import { useSortContext } from "@/contexts/SortContext";
 // Menu items.
 const items = [
   {
@@ -38,6 +39,8 @@ const sortNodesWithMasterFirst = (nodes: ServerNode[]) => {
   };
 
 export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
+  const { sortBy, sortDirection, customOrder } = useSortContext();
+  
   return (
     <Sidebar>
     <SidebarHeader>
@@ -62,30 +65,30 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
                 </SidebarMenuItem>
               ))}
              <SidebarSeparator />
-              <SidebarGroupLabel>Nodes</SidebarGroupLabel>
+              <SidebarGroupLabel>{nodes.length} Nodes</SidebarGroupLabel>
               {nodes.length > 0 && (
                 <>
-                    {sortNodesWithMasterFirst(nodes).map((node) => (
+                    {sortNodes(nodes, sortBy, sortDirection, customOrder).map((node) => (
                     <SidebarMenuItem key={node.id}>
-                    <SidebarMenuButton asChild>
-                    <Link to={`/node/${node.id}`} className="dark:text-white text-black w-full">
-                        <div className="flex items-center justify-between w-full">
+                      <SidebarMenuButton asChild>
+                        <Link to={`/node/${node.id}`} className="dark:text-white text-black w-full">
+                          <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
-                                {node.os === 'macOS' && <FaApple className="h-4 w-4 mr-2" />}
-                                {node.os === 'Linux' && <FaLinux className="h-4 w-4 mr-2" />}
-                                <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
+                              {node.os === 'macOS' && <FaApple className="h-4 w-4 mr-2" />}
+                              {node.os === 'Linux' && <FaLinux className="h-4 w-4 mr-2" />}
+                              <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
                             </div>
                             {node.isMaster && <Badge variant="secondary" className="text-yellow-500">M</Badge>}
-                        </div>
-                    </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                    ))}
+                          </div>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </>
                 )}
 
               <SidebarSeparator />
-              <SidebarGroupLabel>Download or Contribute</SidebarGroupLabel>
+              <SidebarGroupLabel>Install or Contribute</SidebarGroupLabel>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                     <a href="https://github.com/metaspartan/inframon" className="dark:text-white text-black" target="_blank" rel="noopener noreferrer">
@@ -99,7 +102,7 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.2</p>
+        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.3</p>
         <a href="https://x.com/carsenklock" className="dark:text-white text-black mx-auto mb-4 " target="_blank" rel="noopener noreferrer">🔨 Built by Carsen Klock</a>
       </SidebarFooter>
     </Sidebar>

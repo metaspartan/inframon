@@ -11,6 +11,7 @@ import {
   getPowerUsage,
   getCpuUsage,
   getGpuUsage,
+  getGpuCoreCount,
   getMemoryUsage,
   getNetworkTraffic,
   getLocalIp,
@@ -23,6 +24,7 @@ import {
   getCpuModel,
   getStorageInfo,
   isCloudflaredRunning,
+  changeHostname,
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
 import { compressData } from './src/lib/utils';
@@ -148,6 +150,42 @@ registryApp.get('/api/nodes/:nodeId', (req, res) => {
   }
 });
 
+registryApp.post('/api/nodes/:nodeId/hostname', async (req, res) => {
+  const { nodeId } = req.params;
+  const { hostname } = req.body;
+
+  try {
+    await changeHostname(hostname);
+    const node = nodes.get(nodeId);
+    if (node) {
+      node.name = hostname;
+      nodes.set(nodeId, node);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error changing hostname:', error);
+    res.status(500).json({ error: 'Failed to change hostname' });
+  }
+});
+
+registryApp.delete('/api/nodes/:nodeId', (req, res) => {
+  const { nodeId } = req.params;
+  
+  try {
+    const node = nodes.get(nodeId);
+    if (!node) {
+      res.status(404).json({ error: 'Node not found' });
+      return;
+    }
+
+    nodes.delete(nodeId);
+    res.json({ success: true, message: 'Node removed' });
+  } catch (error) {
+    console.error('Error removing node:', error);
+    res.status(500).json({ error: 'Failed to remove node' });
+  }
+});
+
 console.log(`Master Node: ${config.isMaster}`);
 
 // Start registry server first if master
@@ -232,6 +270,7 @@ async function updateHistory() {
     totalMemory: await getTotalMemory(),
     usedMemory: await getUsedMemory(),
     cpuCoreCount: await getCpuCoreCount(),
+    gpuCoreCount: await getGpuCoreCount(),
     systemName: await getSystemName(),
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
@@ -328,10 +367,11 @@ app.get('/api/local-ip', (req, res) => {
 
 
 app.get('/api/server-data', async (req, res) => {
-  const [totalMemory, usedMemory, cpuCoreCount] = await Promise.all([
+  const [totalMemory, usedMemory, cpuCoreCount, gpuCoreCount] = await Promise.all([
     getTotalMemory(),
     getUsedMemory(),
     getCpuCoreCount(),
+    getGpuCoreCount(),
     getSystemName(),
     getUptime(),
     getCpuModel()
@@ -358,6 +398,7 @@ app.get('/api/server-data', async (req, res) => {
     totalMemory,
     usedMemory,
     cpuCoreCount,
+    gpuCoreCount,
     systemName: await getSystemName(),
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
