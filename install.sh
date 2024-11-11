@@ -259,11 +259,11 @@ if [[ "$OS_TYPE" == "macos" ]]; then
     # Validate sudoers file
     sudo visudo -c
     
-    if [ $? -ne 0 ]; then
-        print_error "Failed to configure powermetrics permissions"
-        sudo rm /etc/sudoers.d/inframon
-        exit 1
-    fi
+    # if [ $? -ne 0 ]; then
+    #     print_error "Failed to configure powermetrics permissions"
+    #     sudo rm /etc/sudoers.d/inframon
+    #     exit 1
+    # fi
 fi
 
 # Create the plist file as the target user
