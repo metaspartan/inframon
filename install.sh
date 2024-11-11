@@ -85,15 +85,6 @@ if [[ $IS_MASTER == false ]]; then
     echo "MASTER_URL=$MASTER_URL" >> .env
 fi
 
-# Ensure if old install exists, unload it if darwin
-if [[ "$(uname)" == "Darwin" ]]; then
-    if [[ -f /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist ]]; then
-        print_status "Removing old launchd service..."
-        launchctl bootout system/com.inframon.service 2>/dev/null || true
-        launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
-    fi
-fi
-
 # print_status "Ensuring auto master node discovery is allowed through firewall..."
 # if [[ "$(uname)" == "Linux" ]]; then
 #     sudo ufw allow 3898/tcp
@@ -111,6 +102,22 @@ if [[ $IS_MASTER == true ]]; then
     bun run compile
 else
     bun run compile
+fi
+
+# Ensure if old install exists, unload it if darwin
+if [[ "$(uname)" == "Darwin" ]]; then
+    if [[ -f /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist ]]; then
+        print_status "Removing old launchd service..."
+        launchctl bootout system/com.inframon.service 2>/dev/null || true
+        launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
+    fi
+
+    APP_DIR=$(pwd)
+    # After compilation, add rules for the inframon binary
+    if [ -f "${APP_DIR}/inframon" ]; then
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add "${APP_DIR}/inframon"
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock "${APP_DIR}/inframon"
+    fi
 fi
 
 # Ask about systemd service installation
@@ -191,6 +198,12 @@ fi
 if [ -f "$PLIST_PATH" ]; then
     print_status "Removing old plist file at $PLIST_PATH"
     rm "$PLIST_PATH"
+fi
+
+# After compilation, add rules for the inframon binary
+if [ -f "${APP_DIR}/inframon" ]; then
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add "${APP_DIR}/inframon"
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock "${APP_DIR}/inframon"
 fi
 
 # Make binary executable
