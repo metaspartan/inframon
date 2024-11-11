@@ -42,7 +42,9 @@ print_status "Installing dependencies..."
 if ! command -v bun &> /dev/null; then
     print_status "Installing Bun..."
     curl -fsSL https://bun.sh/install | bash
-    source ~/.bashrc
+    sudo source ~/.bashrc
+    export BUN_INSTALL="$HOME/.bun" 
+    export PATH="$BUN_INSTALL/bin:$PATH" 
 fi
 
 # Clone repository
