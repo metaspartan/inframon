@@ -250,6 +250,10 @@ fi
 if [[ "$OS_TYPE" == "macos" ]]; then
     print_status "Configuring powermetrics permissions..."
     
+    # Remove any existing powermetrics sudoers file
+    sudo rm -f /etc/sudoers.d/powermetrics
+    sudo rm -f /etc/sudoers.d/inframon
+
     # Create a new sudoers file for inframon
     echo "%admin ALL=(ALL) NOPASSWD: /usr/bin/powermetrics" | sudo tee /etc/sudoers.d/inframon
     
