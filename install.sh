@@ -47,8 +47,16 @@ fi
 
 # Clone repository
 print_status "Cloning Inframon repository..."
-git clone https://github.com/metaspartan/inframon.git
-cd inframon
+if [ -n "$SUDO_USER" ]; then
+    # Clone as the actual user instead of root
+    sudo -u "$SUDO_USER" git clone https://github.com/metaspartan/inframon.git
+    cd inframon
+    # Set correct ownership for the entire directory
+    sudo chown -R "$SUDO_USER":"$(id -gn $SUDO_USER)" .
+else
+    git clone https://github.com/metaspartan/inframon.git
+    cd inframon
+fi
 
 # Install node dependencies
 print_status "Installing dependencies..."
