@@ -240,6 +240,26 @@ if [ -n "$SUDO_USER" ]; then
     # sudo chown "$SUDO_USER":"$(id -gn $SUDO_USER)" "$PLIST_DIR"
 fi
 
+# Add sudoers entry for powermetrics on macOS
+if [[ "$OS_TYPE" == "macos" ]]; then
+    print_status "Configuring powermetrics permissions..."
+    
+    # Create a new sudoers file for inframon
+    echo "%admin ALL=(ALL) NOPASSWD: /usr/bin/powermetrics" | sudo tee /etc/sudoers.d/inframon
+    
+    # Set correct permissions
+    sudo chmod 440 /etc/sudoers.d/inframon
+    
+    # Validate sudoers file
+    sudo visudo -c
+    
+    if [ $? -ne 0 ]; then
+        print_error "Failed to configure powermetrics permissions"
+        sudo rm /etc/sudoers.d/inframon
+        exit 1
+    fi
+fi
+
 # Create the plist file as the target user
 sudo -u "$SUDO_USER" tee "$PLIST_PATH" > /dev/null << EOF
 <?xml version="1.0" encoding="UTF-8"?>
