@@ -223,9 +223,9 @@ echo "The target user's UID is: $USER_UID"
 # Create directories and set permissions
 if [ -n "$SUDO_USER" ]; then
     # Create app directory if it doesn't exist
-    sudo mkdir -p "${APP_DIR}"
-    sudo chown -R "$SUDO_USER":"$(id -gn $SUDO_USER)" "${APP_DIR}"
-    sudo chmod 755 "${APP_DIR}"
+    # sudo mkdir -p "${APP_DIR}"
+    # sudo chown -R "$SUDO_USER":"$(id -gn $SUDO_USER)" "${APP_DIR}"
+    # sudo chmod 755 "${APP_DIR}"
 
     # Create log files with correct ownership
     sudo -u "$SUDO_USER" touch "${APP_DIR}/inframon.stdout.log"
@@ -237,7 +237,7 @@ if [ -n "$SUDO_USER" ]; then
 
     # Create LaunchAgents directory if it doesn't exist
     sudo -u "$SUDO_USER" mkdir -p "$PLIST_DIR"
-    sudo chown "$SUDO_USER":"$(id -gn $SUDO_USER)" "$PLIST_DIR"
+    # sudo chown "$SUDO_USER":"$(id -gn $SUDO_USER)" "$PLIST_DIR"
 fi
 
 # Create the plist file as the target user
