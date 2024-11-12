@@ -398,22 +398,22 @@ async function registerWithMaster(serverData: ServerData) {
       }
 
       // Start heartbeat interval
-      const heartbeatInterval = setInterval(async () => {
-        try {
-          const heartbeatResponse = await fetch(`${config.masterUrl}/api/nodes/${nodeId}/heartbeat`, {
-            method: 'POST'
-          });
-          if (!heartbeatResponse.ok) {
-            console.error('Heartbeat failed, attempting to re-register...');
-            clearInterval(heartbeatInterval);
-            setTimeout(() => registerWithMaster(serverData), 5000);
-          }
-        } catch (error) {
-          console.error('Heartbeat failed:', error);
-          clearInterval(heartbeatInterval);
-          setTimeout(() => registerWithMaster(serverData), 5000);
-        }
-      }, 5000);
+      // const heartbeatInterval = setInterval(async () => {
+      //   try {
+      //     const heartbeatResponse = await fetch(`${config.masterUrl}/api/nodes/${nodeId}/heartbeat`, {
+      //       method: 'POST'
+      //     });
+      //     if (!heartbeatResponse.ok) {
+      //       console.error('Heartbeat failed, attempting to re-register...');
+      //       clearInterval(heartbeatInterval);
+      //       setTimeout(() => registerWithMaster(serverData), 5000);
+      //     }
+      //   } catch (error) {
+      //     console.error('Heartbeat failed:', error);
+      //     clearInterval(heartbeatInterval);
+      //     setTimeout(() => registerWithMaster(serverData), 5000);
+      //   }
+      // }, 5000);
     } catch (error) {
       console.error('Failed to register with master:', error);
       setTimeout(() => registerWithMaster(serverData), 5000);
