@@ -76,16 +76,16 @@ export async function getPowerUsage(): Promise<number> {
       const isAMDGPU = await isAMD();
       if (isAMDGPU) {
         try {
-          // Switching to use rocm-smi combined with turbostat for power usage
-          // const output = await executeCommand('cat /sys/class/hwmon/hwmon*/power1_input');
-          // const microwatts = parseInt(output, 10);
-          // const gpuPower = isNaN(microwatts) ? 0 : microwatts / 1_000_000;
-          // totalPower += gpuPower;
+          // Switching to use power1_input for AMD power usage
+          const output = await executeCommand('cat /sys/class/hwmon/hwmon*/power1_input');
+          const microwatts = parseInt(output, 10);
+          const gpuPower = isNaN(microwatts) ? 0 : microwatts / 1_000_000;
+          totalPower += gpuPower;
 
           // Use rocm-smi to get power usage in watts
-          const output = await executeCommand('rocm-smi --showpower');
-          const match = output.match(/Current Socket Graphics Package Power \(W\):\s*(\d+\.\d+)/);
-          const gpuPower = match ? parseFloat(match[1]) : 0;
+          // const output = await executeCommand('rocm-smi --showpower');
+          // const match = output.match(/Current Socket Graphics Package Power \(W\):\s*(\d+\.\d+)/);
+          // const gpuPower = match ? parseFloat(match[1]) : 0;
           totalPower += gpuPower;
         } catch (error) {
           console.error('Error getting AMD power usage:', error);
