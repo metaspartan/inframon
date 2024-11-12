@@ -258,7 +258,7 @@ if [[ "$OS_TYPE" == "macos" ]]; then
     sudo rm -f /etc/sudoers.d/inframon
 
     # Create a new sudoers file for inframon
-    echo "%admin ALL=(ALL) NOPASSWD: /usr/bin/powermetrics" | sudo tee /etc/sudoers.d/inframon
+    echo "%admin ALL=(ALL) NOPASSWD: /usr/bin/powermetrics, /usr/sbin/scutil" | sudo tee /etc/sudoers.d/inframon
     
     # Set correct permissions
     sudo chmod 440 /etc/sudoers.d/inframon
