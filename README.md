@@ -18,6 +18,7 @@ sudo ./inframon-install.sh
 
 (Setup your master node first ("Y" on first prompt), then run the install script again on other local machines to add additional nodes by selecting "N" when prompted, your master node will automatically be discovered by other nodes on your local network, ensure the install.sh is ran with sudo from a user with sudo access).
 
+
 ![Inframon](animated.gif)
 
 ![Server Monitor Dashboard](dash.gif)
@@ -37,6 +38,9 @@ sudo ./inframon-install.sh
 - Master and Node modes (One master, for multiple nodes)
 - Install script for easy setup
 - Auto Master Node Local Network Discovery
+- Edit Hostname (macOS Only currently)
+- Inframon Logs
+- TFLOPS Information
 
 ## Supported Platforms and Devices
 

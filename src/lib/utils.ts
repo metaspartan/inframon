@@ -16,7 +16,7 @@ export function compressData(data: any): string | null {
     let result = '';
     for (let i = 0; i < compressed.length; i += chunkSize) {
       const chunk = compressed.slice(i, i + chunkSize);
-      result += String.fromCharCode.apply(null, chunk);
+      result += String.fromCharCode.apply(null, Array.from(chunk));
     }
     return btoa(result);
   } catch (error) {

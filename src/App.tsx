@@ -136,6 +136,12 @@ function App() {
                   uptime: '',
                   cpuModel: '',
                   storageInfo: { total: 0, used: 0, available: 0 },
+                  deviceCapabilities: {
+                    model: '',
+                    chip: '',
+                    memory: 0,
+                    flops: { fp32: 0, fp16: 0, int8: 0 },
+                  },
                   logs: ''
                 }
               };

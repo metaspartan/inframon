@@ -21,6 +21,7 @@ import {
   getCpuCoreCount,
   getOs,
   getSystemName,
+  getDeviceCapabilities,
   getUptime,
   getCpuModel,
   getStorageInfo,
@@ -101,7 +102,7 @@ registryApp.post('/api/nodes/register', (req, res) => {
 
     if (existingNode) {
       existingNode.lastSeen = new Date();
-      existingNode.lastHeartbeat = new Date();
+      // existingNode.lastHeartbeat = new Date();
       existingNode.status = NodeStatus.CONNECTED;
       existingNode.compressedData = node.compressedData;
       existingNode.name = node.name;
@@ -129,7 +130,7 @@ registryApp.get('/api/nodes', (req, res) => {
       lastSeen: node.lastSeen,
       isMaster: node.isMaster,
       status: node.status,
-      lastHeartbeat: node.lastHeartbeat,
+      // lastHeartbeat: node.lastHeartbeat,
       compressedData: node.compressedData // Send only compressed data
     }));
   res.json(activeNodes);
@@ -214,7 +215,7 @@ registryApp.post('/api/nodes/:nodeId/heartbeat', (req, res) => {
   const node = nodes.get(nodeId);
   
   if (node) {
-    node.lastHeartbeat = new Date();
+    // node.lastHeartbeat = new Date();
     node.status = NodeStatus.CONNECTED;
     nodes.set(nodeId, node);
     res.json({ success: true });
@@ -225,20 +226,20 @@ registryApp.post('/api/nodes/:nodeId/heartbeat', (req, res) => {
 
 console.log(`Master Node: ${config.isMaster}`);
 
-function checkNodeStatus() {
-  const now = new Date();
-  nodes.forEach((node, id) => {
-    const timeSinceHeartbeat = now.getTime() - new Date(node.lastHeartbeat ?? '').getTime();
+// function checkNodeStatus() {
+//   const now = new Date();
+//   nodes.forEach((node, id) => {
+//     const timeSinceHeartbeat = now.getTime() - new Date(node.lastSeen ?? '').getTime();
     
-    if (timeSinceHeartbeat > 25000) { // 25 seconds
-      node.status = NodeStatus.DISCONNECTED;
-      nodes.set(id, node);
-      console.log(`Node ${node.name} (${node.ip}) disconnected`);
-      // remove node from nodes map
-      nodes.delete(id);
-    }
-  });
-}
+//     if (timeSinceHeartbeat > 25000) { // 25 seconds
+//       node.status = NodeStatus.DISCONNECTED;
+//       nodes.set(id, node);
+//       console.log(`Node ${node.name} (${node.ip}) disconnected`);
+//       // remove node from nodes map
+//       nodes.delete(id);
+//     }
+//   });
+// }
 
 // Start registry server first if master
 if (config.isMaster) {
@@ -249,7 +250,7 @@ if (config.isMaster) {
     // Start the update history loop after registry is running
     updateHistory();
     setInterval(updateHistory, 1000);
-    setInterval(checkNodeStatus, 5000);
+    // setInterval(checkNodeStatus, 5000);
   });
 } else {
   // For non-master nodes, discover master and start update
@@ -328,6 +329,7 @@ async function updateHistory() {
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
     storageInfo: await getStorageInfo(),
+    deviceCapabilities: await getDeviceCapabilities(),
     logs: await getInframonLogs()
   };
 
@@ -354,7 +356,7 @@ async function updateHistory() {
       lastSeen: new Date(),
       isMaster: true,
       status: NodeStatus.CONNECTED,
-      lastHeartbeat: new Date(),
+      // lastHeartbeat: new Date(),
       compressedData: compressData(compressedData) ?? ''
     };
     nodes.set(nodeId, node);
@@ -396,7 +398,7 @@ async function registerWithMaster(serverData: ServerData) {
         lastSeen: new Date(),
         isMaster: false,
         status: NodeStatus.CONNECTED,
-        lastHeartbeat: new Date(),
+        // lastHeartbeat: new Date(),
         compressedData: compressData(compressedData)
       };
 
@@ -490,6 +492,7 @@ app.get('/api/server-data', async (req, res) => {
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
     storageInfo: await getStorageInfo(),
+    deviceCapabilities: await getDeviceCapabilities(),
     logs: await getInframonLogs()
   };
 

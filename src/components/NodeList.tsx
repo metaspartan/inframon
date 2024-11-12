@@ -18,6 +18,7 @@ import { useSortContext } from '@/contexts/SortContext';
 import { sortNodes } from '@/lib/sorting';
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { VscChip } from "react-icons/vsc";
 import { DotsVerticalIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
@@ -30,6 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { GpuBar } from './GpuBar';
 
 const SORT_PREFERENCES_KEY = "nodeList:sortPreferences";
 
@@ -218,6 +220,11 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
     return `${Math.floor(seconds / 3600)}h ago`;
   }
 
+  const totalTFLOPS = nodes.reduce((acc, node) => {
+    const flops = node.data?.deviceCapabilities?.flops?.fp16 || 0;
+    return acc + flops;
+  }, 0);
+
   return (
     <>
       <div className="w-full max-w-full mt-2">
@@ -263,7 +270,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
               id="stats-mode"
             />
             <label htmlFor="stats-mode" className="text-sm text-muted-foreground">
-              Show Totals
+              Totals
             </label>
           </div>
           <Select value={osFilter} onValueChange={(value: OSFilter) => setOSFilter(value)}>
@@ -389,6 +396,18 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
               </CardContent>
             </Card>
           </div>
+          {/* <div className={cn(
+              "transition-all duration-300",
+              showStats ? "opacity-100 max-h-[100%] mb-4" : "opacity-0 max-h-0 overflow-hidden"
+            )}>
+            {totalTFLOPS && (
+              <Card className="pt-6">
+                <CardContent>
+                <GpuBar flops={totalTFLOPS} />
+                </CardContent>
+              </Card>
+            )}
+          </div> */}
           <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="nodes" direction="horizontal">
             {(provided) => (
@@ -535,6 +554,19 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
                                       </div>
                                     </div>
                                   </div>
+                                )}
+                                {node.data.deviceCapabilities && (
+                                  <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                    <VscChip className="h-4 w-4" />
+                                    <span>TFLOPS</span>
+                                  </div>
+                                  <div className="text-sm text-right">
+                                    <div className="text-muted-foreground">
+                                      {node.data.deviceCapabilities.flops.fp16.toFixed(2)}
+                                    </div>
+                                  </div>
+                                </div>
                                 )}
                                 </TabsContent>
 

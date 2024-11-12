@@ -72,8 +72,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
     <CardTitle className="text-sm font-medium text-muted-foreground">{isAppleSilicon(data.cpuModel) 
-                                          ? `CPU/GPU Cores`
-                                          : 'CPU Cores'
+                                          ? `CPU/GPU Cores (${data.deviceCapabilities?.flops?.fp16.toFixed(2)} TFLOPS)`
+                                          : `CPU Cores (${data.deviceCapabilities?.flops?.fp16.toFixed(2)} TFLOPS)`
                                         }</CardTitle>
     <CpuIcon className="h-4 w-4 text-muted-foreground" />
   </CardHeader>

@@ -28,6 +28,16 @@ export interface ServerData {
     used: number;
     available: number;
   };
+  deviceCapabilities: {
+    model: string;
+    chip: string;
+    memory: number;
+    flops: {
+      fp32: number;
+      fp16: number;
+      int8: number;
+    };
+  };
   logs: string;
 }
 
@@ -47,7 +57,7 @@ export interface ServerNode {
   isMaster: boolean;
   compressedData?: string;
   status: NodeStatus;
-  lastHeartbeat: Date | null;
+  // lastHeartbeat: Date | null;
 }
 
 export interface NodeWithData extends ServerNode {
@@ -72,4 +82,17 @@ export interface SortPreferences {
   order: string[];
   osFilter: OSFilter;
   nodeTypeFilter: NodeTypeFilter;
+}
+
+export interface DeviceFlops {
+  fp32: number;
+  fp16: number;
+  int8: number;
+}
+
+export interface DeviceCapabilities {
+  model: string;
+  chip: string;
+  memory: number;  // in MB
+  flops: DeviceFlops;
 }

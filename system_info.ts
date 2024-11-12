@@ -1,8 +1,125 @@
+// Copyright 2024 Carsen Klock
+// Licensed under the MIT License
+// https://github.com/carsenk/inframon
+// system_info.ts - Handles system information and device capabilities
+
 import { spawn } from 'child_process';
+import { DeviceFlops, DeviceCapabilities } from './src/types';
 import os from 'os';
 
 const isMacOS = os.platform() === 'darwin';
 const isLinux = os.platform() === 'linux';
+
+// TFLOPS is a constant that represents the number of FLOPS in a single second
+// 1 TFLOPS = 1,000,000,000,000 FLOPS
+// Credits to https://github.com/exo-explore/exo for the chip flops data
+const TFLOPS = 1.00;
+const CHIP_FLOPS: Record<string, DeviceFlops> = {
+  // M chips
+  "Apple M1": { fp32: 2.29*TFLOPS, fp16: 4.58*TFLOPS, int8: 9.16*TFLOPS },
+  "Apple M1 Pro": { fp32: 5.30*TFLOPS, fp16: 10.60*TFLOPS, int8: 21.20*TFLOPS },
+  "Apple M1 Max": { fp32: 10.60*TFLOPS, fp16: 21.20*TFLOPS, int8: 42.40*TFLOPS },
+  "Apple M1 Ultra": { fp32: 21.20*TFLOPS, fp16: 42.40*TFLOPS, int8: 84.80*TFLOPS },
+  "Apple M2": { fp32: 3.55*TFLOPS, fp16: 7.10*TFLOPS, int8: 14.20*TFLOPS },
+  "Apple M2 Pro": { fp32: 5.68*TFLOPS, fp16: 11.36*TFLOPS, int8: 22.72*TFLOPS },
+  "Apple M2 Max": { fp32: 13.49*TFLOPS, fp16: 26.98*TFLOPS, int8: 53.96*TFLOPS },
+  "Apple M2 Ultra": { fp32: 26.98*TFLOPS, fp16: 53.96*TFLOPS, int8: 107.92*TFLOPS },
+  "Apple M3": { fp32: 3.55*TFLOPS, fp16: 7.10*TFLOPS, int8: 14.20*TFLOPS },
+  "Apple M3 Pro": { fp32: 4.97*TFLOPS, fp16: 9.94*TFLOPS, int8: 19.88*TFLOPS },
+  "Apple M3 Max": { fp32: 14.20*TFLOPS, fp16: 28.40*TFLOPS, int8: 56.80*TFLOPS },
+  "Apple M4": { fp32: 4.26*TFLOPS, fp16: 8.52*TFLOPS, int8: 17.04*TFLOPS },
+  "Apple M4 Pro": { fp32: 5.72*TFLOPS, fp16: 11.44*TFLOPS, int8: 22.88*TFLOPS },
+  "Apple M4 Max": { fp32: 18.03*TFLOPS, fp16: 36.07*TFLOPS, int8: 72.14*TFLOPS },
+
+  // A chips
+  "Apple A13 Bionic": { fp32: 0.69*TFLOPS, fp16: 1.38*TFLOPS, int8: 2.76*TFLOPS },
+  "Apple A14 Bionic": { fp32: 0.75*TFLOPS, fp16: 1.50*TFLOPS, int8: 3.00*TFLOPS },
+  "Apple A15 Bionic": { fp32: 1.37*TFLOPS, fp16: 2.74*TFLOPS, int8: 5.48*TFLOPS },
+  "Apple A16 Bionic": { fp32: 1.79*TFLOPS, fp16: 3.58*TFLOPS, int8: 7.16*TFLOPS },
+  "Apple A17 Pro": { fp32: 2.15*TFLOPS, fp16: 4.30*TFLOPS, int8: 8.60*TFLOPS },
+
+  // NVIDIA RTX 40 series
+  "NVIDIA GEFORCE RTX 4090": { fp32: 82.58*TFLOPS, fp16: 165.16*TFLOPS, int8: 330.32*TFLOPS },
+  "NVIDIA GEFORCE RTX 4080": { fp32: 48.74*TFLOPS, fp16: 97.48*TFLOPS, int8: 194.96*TFLOPS },
+  "NVIDIA GEFORCE RTX 4080 SUPER": { fp32: 52.0*TFLOPS, fp16: 104.0*TFLOPS, int8: 208.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 4070 TI SUPER": { fp32: 40.0*TFLOPS, fp16: 80.0*TFLOPS, int8: 160.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 4070 TI": { fp32: 39.43*TFLOPS, fp16: 78.86*TFLOPS, int8: 157.72*TFLOPS },
+  "NVIDIA GEFORCE RTX 4070 SUPER": { fp32: 30.0*TFLOPS, fp16: 60.0*TFLOPS, int8: 120.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 4070": { fp32: 29.0*TFLOPS, fp16: 58.0*TFLOPS, int8: 116.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 4060 TI 16GB": { fp32: 22.0*TFLOPS, fp16: 44.0*TFLOPS, int8: 88.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 4060 TI": { fp32: 22.0*TFLOPS, fp16: 44.0*TFLOPS, int8: 88.0*TFLOPS },
+
+  // NVIDIA RTX 30 series
+  "NVIDIA GEFORCE RTX 3050": { fp32: 9.11*TFLOPS, fp16: 18.22*TFLOPS, int8: 36.44*TFLOPS },
+  "NVIDIA GEFORCE RTX 3060": { fp32: 13.0*TFLOPS, fp16: 26.0*TFLOPS, int8: 52.0*TFLOPS },
+  "NVIDIA GEFORCE RTX 3060 TI": { fp32: 16.2*TFLOPS, fp16: 32.4*TFLOPS, int8: 64.8*TFLOPS },
+  "NVIDIA GEFORCE RTX 3070": { fp32: 20.3*TFLOPS, fp16: 40.6*TFLOPS, int8: 81.2*TFLOPS },
+  "NVIDIA GEFORCE RTX 3070 TI": { fp32: 21.8*TFLOPS, fp16: 43.6*TFLOPS, int8: 87.2*TFLOPS },
+  "NVIDIA GEFORCE RTX 3080 (10 GB)": { fp32: 29.8*TFLOPS, fp16: 59.6*TFLOPS, int8: 119.2*TFLOPS },
+  "NVIDIA GEFORCE RTX 3080 (12 GB)": { fp32: 30.6*TFLOPS, fp16: 61.2*TFLOPS, int8: 122.4*TFLOPS },
+  "NVIDIA GEFORCE RTX 3080 TI": { fp32: 34.1*TFLOPS, fp16: 68.2*TFLOPS, int8: 136.4*TFLOPS },
+  "NVIDIA GEFORCE RTX 3090": { fp32: 35.6*TFLOPS, fp16: 71.2*TFLOPS, int8: 142.4*TFLOPS },
+  "NVIDIA GEFORCE RTX 3090 TI": { fp32: 40.0*TFLOPS, fp16: 80.0*TFLOPS, int8: 160.0*TFLOPS },
+
+  // NVIDIA RTX 20 series
+  "NVIDIA GEFORCE RTX 2060": { fp32: 6.45*TFLOPS, fp16: 12.9*TFLOPS, int8: 25.8*TFLOPS },
+  "NVIDIA GEFORCE RTX 2060 SUPER": { fp32: 7.2*TFLOPS, fp16: 14.4*TFLOPS, int8: 28.8*TFLOPS },
+  "NVIDIA GEFORCE RTX 2070": { fp32: 7.46*TFLOPS, fp16: 14.93*TFLOPS, int8: 29.86*TFLOPS },
+  "NVIDIA GEFORCE RTX 2070 SUPER": { fp32: 9.06*TFLOPS, fp16: 18.12*TFLOPS, int8: 36.24*TFLOPS },
+  "NVIDIA GEFORCE RTX 2080": { fp32: 10.07*TFLOPS, fp16: 20.14*TFLOPS, int8: 40.28*TFLOPS },
+  "NVIDIA GEFORCE RTX 2080 TI": { fp32: 13.45*TFLOPS, fp16: 26.9*TFLOPS, int8: 40.28*TFLOPS },
+  "NVIDIA GEFORCE RTX 2080 SUPER": { fp32: 11.15*TFLOPS, fp16: 22.30*TFLOPS, int8: 44.60*TFLOPS },
+  "NVIDIA TITAN RTX": { fp32: 16.31*TFLOPS, fp16: 32.62*TFLOPS, int8: 65.24*TFLOPS },
+
+  // NVIDIA GTX series
+  "NVIDIA GEFORCE GTX 1050 TI": { fp32: 2.0*TFLOPS, fp16: 4.0*TFLOPS, int8: 8.0*TFLOPS },
+  "NVIDIA GeForce GTX 1660 TI": { fp32: 4.8*TFLOPS, fp16: 9.6*TFLOPS, int8: 19.2*TFLOPS },
+
+  // NVIDIA Professional
+  "NVIDIA RTX A2000": { fp32: 7.99*TFLOPS, fp16: 7.99*TFLOPS, int8: 31.91*TFLOPS },
+  "NVIDIA RTX A4000": { fp32: 19.17*TFLOPS, fp16: 19.17*TFLOPS, int8: 76.68*TFLOPS },
+  "NVIDIA RTX A4500": { fp32: 23.65*TFLOPS, fp16: 23.65*TFLOPS, int8: 94.6*TFLOPS },
+  "NVIDIA RTX A5000": { fp32: 27.8*TFLOPS, fp16: 27.8*TFLOPS, int8: 111.2*TFLOPS },
+  "NVIDIA RTX A6000": { fp32: 38.71*TFLOPS, fp16: 38.71*TFLOPS, int8: 154.84*TFLOPS },
+  "NVIDIA RTX 4000 ADA GENERATION": { fp32: 26.7*TFLOPS, fp16: 26.7*TFLOPS, int8: 258.0*TFLOPS },
+
+  // NVIDIA Data Center
+  "NVIDIA A40 48GB PCIE": { fp32: 37.4*TFLOPS, fp16: 149.7*TFLOPS, int8: 299.3*TFLOPS },
+  // TODO: These need real data
+  "NVIDIA A100 40GB PCIE": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+  "NVIDIA A800 40GB PCIE": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+  "NVIDIA A100 80GB PCIE": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+  "NVIDIA A800 80GB PCIE": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+  "NVIDIA A100 80GB SXM": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+  "NVIDIA A800 80GB SXM": { fp32: 19.5*TFLOPS, fp16: 312.0*TFLOPS, int8: 624.0*TFLOPS },
+
+  // AMD RX 6000 series
+  "AMD Radeon RX 6900 XT": { fp32: 23.04*TFLOPS, fp16: 46.08*TFLOPS, int8: 92.16*TFLOPS },
+  "AMD Radeon RX 6800 XT": { fp32: 20.74*TFLOPS, fp16: 41.48*TFLOPS, int8: 82.96*TFLOPS },
+  "AMD Radeon RX 6800": { fp32: 16.17*TFLOPS, fp16: 32.34*TFLOPS, int8: 64.68*TFLOPS },
+  "AMD Radeon RX 6700 XT": { fp32: 13.21*TFLOPS, fp16: 26.42*TFLOPS, int8: 52.84*TFLOPS },
+  "AMD Radeon RX 6700": { fp32: 11.4*TFLOPS, fp16: 22.8*TFLOPS, int8: 45.6*TFLOPS },
+  "AMD Radeon RX 6600 XT": { fp32: 10.6*TFLOPS, fp16: 21.2*TFLOPS, int8: 42.4*TFLOPS },
+  "AMD Radeon RX 6600": { fp32: 8.93*TFLOPS, fp16: 17.86*TFLOPS, int8: 35.72*TFLOPS },
+  "AMD Radeon RX 6500 XT": { fp32: 5.77*TFLOPS, fp16: 11.54*TFLOPS, int8: 23.08*TFLOPS },
+  "AMD Radeon RX 6400": { fp32: 3.57*TFLOPS, fp16: 7.14*TFLOPS, int8: 14.28*TFLOPS },
+
+  // AMD RX 7000 series
+  "AMD Radeon RX 7900 XTX": { fp32: 61.4*TFLOPS, fp16: 122.8*TFLOPS, int8: 245.6*TFLOPS },
+  "AMD Radeon RX 7900 XT": { fp32: 53.4*TFLOPS, fp16: 106.8*TFLOPS, int8: 213.6*TFLOPS },
+  "AMD Radeon RX 7800 XT": { fp32: 42.6*TFLOPS, fp16: 85.2*TFLOPS, int8: 170.4*TFLOPS },
+  "AMD Radeon RX 7700 XT": { fp32: 34.2*TFLOPS, fp16: 68.4*TFLOPS, int8: 136.8*TFLOPS },
+  "AMD Radeon RX 7600": { fp32: 21.5*TFLOPS, fp16: 43.0*TFLOPS, int8: 86.0*TFLOPS },
+  "AMD Radeon RX 7500": { fp32: 16.2*TFLOPS, fp16: 32.4*TFLOPS, int8: 64.8*TFLOPS }
+};
+
+// Add laptop variants
+Object.keys(CHIP_FLOPS).forEach(key => {
+  CHIP_FLOPS[`LAPTOP GPU ${key}`] = CHIP_FLOPS[key];
+  CHIP_FLOPS[`Laptop GPU ${key}`] = CHIP_FLOPS[key];
+  CHIP_FLOPS[`${key} LAPTOP GPU`] = CHIP_FLOPS[key];
+  CHIP_FLOPS[`${key} Laptop GPU`] = CHIP_FLOPS[key];
+});
 
 async function executeCommand(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -60,6 +177,79 @@ async function getTurbostatPower(): Promise<number> {
     console.error('Error getting turbostat power:', error);
     return 0;
   }
+}
+
+export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
+  if (isMacOS) {
+    try {
+      const model = await executeCommand('system_profiler SPHardwareDataType');
+      const modelMatch = model.match(/Model Name: (.+)/);
+      const chipMatch = model.match(/Chip: (.+)/);
+      const memoryMatch = model.match(/Memory: (\d+) (GB|MB)/);
+      
+      const modelId = modelMatch ? modelMatch[1].trim() : 'Unknown Model';
+      const chipId = chipMatch ? chipMatch[1].trim() : 'Unknown Chip';
+      let memory = 0;
+      
+      if (memoryMatch) {
+        const value = parseInt(memoryMatch[1]);
+        memory = memoryMatch[2] === 'GB' ? value * 1024 : value;
+      }
+
+      return {
+        model: modelId,
+        chip: chipId,
+        memory,
+        flops: CHIP_FLOPS[chipId] || { fp32: 0, fp16: 0, int8: 0 }
+      };
+    } catch (error) {
+      console.error('Error getting device capabilities:', error);
+      return {
+        model: 'Unknown Model',
+        chip: 'Unknown Chip',
+        memory: 0,
+        flops: { fp32: 0, fp16: 0, int8: 0 }
+      };
+    }
+  } else if (isLinux) {
+    try {
+      // Check for NVIDIA GPU
+      const isNVIDIAGPU = await isNVIDIA();
+      if (isNVIDIAGPU) {
+        const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader');
+        const [name, memoryStr] = output.split(',').map(s => s.trim());
+        const memory = parseInt(memoryStr);
+        
+        return {
+          model: `Linux Box (${name})`,
+          chip: name.toUpperCase(),
+          memory,
+          flops: CHIP_FLOPS[name.toUpperCase()] || { fp32: 0, fp16: 0, int8: 0 }
+        };
+      }
+      
+      // Check for AMD GPU
+      const isAMDGPU = await isAMD();
+      if (isAMDGPU) {
+        // Add AMD detection logic here
+        return {
+          model: 'Linux Box (AMD)',
+          chip: 'Unknown AMD',
+          memory: 0,
+          flops: { fp32: 0, fp16: 0, int8: 0 }
+        };
+      }
+    } catch (error) {
+      console.error('Error getting device capabilities:', error);
+    }
+  }
+  
+  return {
+    model: 'Unknown Device',
+    chip: 'Unknown Chip',
+    memory: 0,
+    flops: { fp32: 0, fp16: 0, int8: 0 }
+  };
 }
 
 export async function getPowerUsage(): Promise<number> {

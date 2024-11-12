@@ -26,11 +26,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from '@/components/mode-toggle';
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { ServerNode } from "@/types";
+import { NodeWithData } from "@/types";
 import { FaApple, FaLinux } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { sortNodes } from "@/lib/sorting";
 import { useSortContext } from "@/contexts/SortContext";
+import { Card, CardContent } from "@/components/ui/card";
+import { GpuBar } from "./GpuBar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 // Menu items.
 const items = [
   {
@@ -120,9 +123,14 @@ sudo ./inframon-install.sh`;
     );
   };
 
-export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
+export function AppSidebar({ nodes }: { nodes: NodeWithData[] }) {
   const { sortBy, sortDirection, customOrder } = useSortContext();
   
+  const totalTFLOPS = nodes.reduce((acc, node) => {
+    const flops = node.data?.deviceCapabilities?.flops?.fp16 || 0;
+    return acc + flops;
+  }, 0);
+
   return (<>
     <Sidebar>
     <SidebarHeader>
@@ -147,27 +155,33 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
                 </SidebarMenuItem>
               ))}
              <SidebarSeparator />
-              <SidebarGroupLabel>{nodes.length} Nodes</SidebarGroupLabel>
+              <SidebarGroupLabel>
+                {nodes.length} Nodes {totalTFLOPS > 0 && `(${totalTFLOPS.toFixed(2)} TFLOPS)`}
+              </SidebarGroupLabel>
               {nodes.length > 0 && (
-                <>
-                    {sortNodes(nodes, sortBy, sortDirection, customOrder).map((node) => (
-                    <SidebarMenuItem key={node.id}>
-                      <SidebarMenuButton asChild>
-                        <Link to={`/node/${node.id}`} className="dark:text-white text-black w-full">
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center">
-                              {node.os === 'macOS' && <FaApple className="h-4 w-4 mr-2" />}
-                              {node.os === 'Linux' && <FaLinux className="h-4 w-4 mr-2" />}
-                              <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
-                            </div>
-                            {node.isMaster && <Badge variant="secondary" className="text-yellow-500">M</Badge>}
-                          </div>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </>
-                )}
+  <div className="py-2">
+    <ScrollArea className="h-[200px]">
+      <div className="pr-4">
+        {sortNodes(nodes, sortBy, sortDirection, customOrder).map((node) => (
+          <SidebarMenuItem key={node.id}>
+            <SidebarMenuButton asChild>
+              <Link to={`/node/${node.id}`} className="dark:text-white text-black w-full">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    {node.os === 'macOS' && <FaApple className="h-4 w-4 mr-2" />}
+                    {node.os === 'Linux' && <FaLinux className="h-4 w-4 mr-2" />}
+                    <span style={{fontSize: '13px'}}>{node.name.length > 20 ? node.name.slice(0, 20) + '...' : node.name}</span>
+                  </div>
+                  {node.isMaster && <Badge variant="secondary" className="text-yellow-500">M</Badge>}
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </div>
+    </ScrollArea>
+  </div>
+)}
 
               <SidebarSeparator />
               <SidebarGroupLabel>Links</SidebarGroupLabel>
@@ -185,8 +199,15 @@ export function AppSidebar({ nodes }: { nodes: ServerNode[] }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.3</p>
-        <a href="https://x.com/carsenklock" className="dark:text-white text-black mx-auto mb-4 " target="_blank" rel="noopener noreferrer">🔨 Built by Carsen Klock</a>
+      {totalTFLOPS && (
+              <Card className="mb-2 pt-6">
+                <CardContent>
+                <GpuBar flops={totalTFLOPS} />
+                </CardContent>
+              </Card>
+            )}
+        <p className="text-sm text-muted-foreground mx-auto">Version v0.1.4</p>
+        <a href="https://x.com/carsenklock" className="text-muted-foreground mx-auto mb-4 hover:dark:text-white hover:text-black" target="_blank" rel="noopener noreferrer">🔨 Built by Carsen Klock</a>
       </SidebarFooter>
     </Sidebar>
      </>
