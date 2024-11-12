@@ -6,7 +6,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { config } from './config';
-import { ServerData, ServerNode } from './src/types';
+import { NodeStatus, ServerData, ServerNode } from './src/types';
+import { logger } from './src/lib/logger';
 import {
   getPowerUsage,
   getCpuUsage,
@@ -24,6 +25,7 @@ import {
   getCpuModel,
   getStorageInfo,
   isCloudflaredRunning,
+  getInframonLogs,
   changeHostname,
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
@@ -38,6 +40,10 @@ const app = express();
 
 const port = config.nodePort;
 const FRONTEND_PORT = config.frontendPort;
+
+logger; 
+
+console.log('Inframon is starting');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -76,7 +82,6 @@ registryApp.post('/api/nodes/register', (req, res) => {
       throw new Error('No compressed data received');
     }
     
-    // Store the node with compressed data only
     const newNode: ServerNode = {
       id: node.id,
       name: node.name,
@@ -84,23 +89,24 @@ registryApp.post('/api/nodes/register', (req, res) => {
       ip: node.ip,
       port: node.port,
       lastSeen: new Date(),
+      // lastHeartbeat: new Date(),
+      status: NodeStatus.CONNECTING,
       isMaster: node.isMaster,
       compressedData: node.compressedData
     };
 
-    // Check if a node with this IP already exists (excluding the master node)
     const existingNode = Array.from(nodes.values()).find(
       n => n.ip === newNode.ip && !n.isMaster
     );
 
     if (existingNode) {
-      // Update the existing node
       existingNode.lastSeen = new Date();
+      existingNode.lastHeartbeat = new Date();
+      existingNode.status = NodeStatus.CONNECTED;
       existingNode.compressedData = node.compressedData;
       existingNode.name = node.name;
       nodes.set(existingNode.id, existingNode);
     } else {
-      // Add new node
       nodes.set(newNode.id, newNode);
     }
 
@@ -122,6 +128,8 @@ registryApp.get('/api/nodes', (req, res) => {
       port: node.port,
       lastSeen: node.lastSeen,
       isMaster: node.isMaster,
+      status: node.status,
+      lastHeartbeat: node.lastHeartbeat,
       compressedData: node.compressedData // Send only compressed data
     }));
   res.json(activeNodes);
@@ -186,7 +194,36 @@ registryApp.delete('/api/nodes/:nodeId', (req, res) => {
   }
 });
 
+registryApp.post('/api/nodes/:nodeId/heartbeat', (req, res) => {
+  const { nodeId } = req.params;
+  const node = nodes.get(nodeId);
+  
+  if (node) {
+    node.lastHeartbeat = new Date();
+    node.status = NodeStatus.CONNECTED;
+    nodes.set(nodeId, node);
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Node not found' });
+  }
+});
+
 console.log(`Master Node: ${config.isMaster}`);
+
+function checkNodeStatus() {
+  const now = new Date();
+  nodes.forEach((node, id) => {
+    const timeSinceHeartbeat = now.getTime() - new Date(node.lastHeartbeat ?? '').getTime();
+    
+    if (timeSinceHeartbeat > 10000) { // 10 seconds
+      node.status = NodeStatus.DISCONNECTED;
+      nodes.set(id, node);
+      console.log(`Node ${node.name} (${node.ip}) disconnected`);
+      // remove node from nodes map
+      nodes.delete(id);
+    }
+  });
+}
 
 // Start registry server first if master
 if (config.isMaster) {
@@ -197,6 +234,7 @@ if (config.isMaster) {
     // Start the update history loop after registry is running
     updateHistory();
     setInterval(updateHistory, 1000);
+    setInterval(checkNodeStatus, 5000);
   });
 } else {
   // For non-master nodes, discover master and start update
@@ -274,7 +312,8 @@ async function updateHistory() {
     systemName: await getSystemName(),
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
-    storageInfo: await getStorageInfo()
+    storageInfo: await getStorageInfo(),
+    logs: await getInframonLogs()
   };
 
   // Handle node registration based on master/slave status
@@ -299,6 +338,8 @@ async function updateHistory() {
       port: config.nodePort,
       lastSeen: new Date(),
       isMaster: true,
+      status: NodeStatus.CONNECTED,
+      lastHeartbeat: new Date(),
       compressedData: compressData(compressedData) ?? ''
     };
     nodes.set(nodeId, node);
@@ -339,6 +380,8 @@ async function registerWithMaster(serverData: ServerData) {
         port: config.nodePort,
         lastSeen: new Date(),
         isMaster: false,
+        status: NodeStatus.CONNECTED,
+        lastHeartbeat: new Date(),
         compressedData: compressData(compressedData)
       };
 
@@ -353,6 +396,24 @@ async function registerWithMaster(serverData: ServerData) {
       if (!response.ok) {
         throw new Error(`Failed to register with master: ${response.status}`);
       }
+
+      // Start heartbeat interval
+      const heartbeatInterval = setInterval(async () => {
+        try {
+          const heartbeatResponse = await fetch(`${config.masterUrl}/api/nodes/${nodeId}/heartbeat`, {
+            method: 'POST'
+          });
+          if (!heartbeatResponse.ok) {
+            console.error('Heartbeat failed, attempting to re-register...');
+            clearInterval(heartbeatInterval);
+            setTimeout(() => registerWithMaster(serverData), 5000);
+          }
+        } catch (error) {
+          console.error('Heartbeat failed:', error);
+          clearInterval(heartbeatInterval);
+          setTimeout(() => registerWithMaster(serverData), 5000);
+        }
+      }, 5000);
     } catch (error) {
       console.error('Failed to register with master:', error);
       setTimeout(() => registerWithMaster(serverData), 5000);
@@ -402,7 +463,8 @@ app.get('/api/server-data', async (req, res) => {
     systemName: await getSystemName(),
     uptime: await getUptime(),
     cpuModel: await getCpuModel(),
-    storageInfo: await getStorageInfo()
+    storageInfo: await getStorageInfo(),
+    logs: await getInframonLogs()
   };
 
   res.json(serverData);
@@ -445,18 +507,21 @@ frontendApp.listen(FPORT, () => {
 // kill server monitor this app
 process.on('SIGINT', () => {
   console.log('Inframon is shutting down');
+  nodes.clear();
   discovery.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('Inframon is shutting down');
+  nodes.clear();
   discovery.close();
   process.exit(0);
 });
 
 process.on('SIGKILL', () => {
   console.log('Inframon is being killed');
+  nodes.clear();
   discovery.close();
   process.exit(0);
 });

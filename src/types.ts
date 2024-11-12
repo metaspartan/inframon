@@ -28,6 +28,13 @@ export interface ServerData {
     used: number;
     available: number;
   };
+  logs: string;
+}
+
+export enum NodeStatus {
+  CONNECTED = 'connected',
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting'
 }
 
 export interface ServerNode {
@@ -39,6 +46,8 @@ export interface ServerNode {
   lastSeen: Date;
   isMaster: boolean;
   compressedData?: string;
+  status: NodeStatus;
+  lastHeartbeat: Date | null;
 }
 
 export interface NodeWithData extends ServerNode {

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Slash } from 'lucide-react';
 import { SortProvider } from '@/contexts/SortContext';
+import { CombinedLogs } from '@/components/CombinedLogs';
 
 
 function DashboardWrapper() {
@@ -134,7 +135,8 @@ function App() {
                   systemName: 'Unknown',
                   uptime: '',
                   cpuModel: '',
-                  storageInfo: { total: 0, used: 0, available: 0 }
+                  storageInfo: { total: 0, used: 0, available: 0 },
+                  logs: ''
                 }
               };
             }
@@ -169,6 +171,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<NodeList nodes={nodes} />} />
                   <Route path="/node/:nodeId" element={<DashboardWrapper />} />
+                  <Route path="/logs" element={<CombinedLogs nodes={nodes} />} />
                 </Routes>
               </div>
             </main>

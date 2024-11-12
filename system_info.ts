@@ -529,6 +529,22 @@ export async function getGpuCoreCount(): Promise<number> {
   return 0;
 }
 
+// get the inframon logs for this node
+export async function getInframonLogs(): Promise<string> {
+  try {
+    const location = process.cwd();
+    const stdout = await executeCommand(`cat ${location}/inframon.stdout.log 2>/dev/null || echo "No stdout log file"`);
+    const stderr = await executeCommand(`cat ${location}/inframon.stderr.log 2>/dev/null || echo "No stderr log file"`);
+    // or other log files
+    const out = await executeCommand(`cat ${location}/inframon.out.log 2>/dev/null || echo "No out log file"`);
+    const err = await executeCommand(`cat ${location}/inframon.err.log 2>/dev/null || echo "No err log file"`); 
+    return `=== STDOUT ===\n${stdout.trim()}\n\n=== STDERR ===\n${stderr.trim()}\n\n=== OUT ===\n${out.trim()}\n\n=== ERR ===\n${err.trim()}`;
+  } catch (error) {
+    console.error('Error getting inframon logs:', error);
+    return 'Unable to retrieve logs';
+  }
+}
+
 // export async function getNvmeInfo(): Promise<{ total: number; used: number }> {
 //   try {
 //     const output = await executeCommand("df -B1 /dev/nvme0n1p1 | tail -1 | awk '{print $2,$3}'");

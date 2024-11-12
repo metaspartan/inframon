@@ -1,4 +1,4 @@
-import { NodeWithData, SortDirection } from '@/types';
+import { NodeWithData, SortDirection, NodeStatus } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -209,6 +209,14 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
       setSortDirection("asc");
     }
   };
+
+  function getTimeSinceLastHeartbeat(date: Date): string {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+    if (seconds < 10) return 'Just now';
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    return `${Math.floor(seconds / 3600)}h ago`;
+  }
 
   return (
     <>
@@ -563,6 +571,18 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
                                       )}
                                     </div>
                                   </div>
+                                  <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                <Badge variant={
+                                  node.status === NodeStatus.CONNECTED ? "default" :
+                                  node.status === NodeStatus.CONNECTING ? "destructive" : "destructive"
+                                }>
+                                  {node.status}
+                                </Badge></div>
+                                <div className="text-sm text-right">
+                                  Last seen: {getTimeSinceLastHeartbeat(node.lastSeen)}                                  
+                                </div>
+                              </div>
                                 </TabsContent>
                               </Tabs>
                             </CardContent>
