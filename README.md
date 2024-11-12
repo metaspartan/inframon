@@ -2,6 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/metaspartan/inframon?color=green)
 ![GitHub Repo stars](https://img.shields.io/github/stars/metaspartan/inframon?style=social)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/metaspartan)
+![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fmetaspartan%2Finframon)
 
 Inframon Server Monitor is a lightweight, real-time local networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics through a local web interface. Auto Master Node Local Network Discovery is supported (multiple devices supported Apple Silicon Macs and Linux AMD/NVIDIA). Written by Carsen Klock
 
