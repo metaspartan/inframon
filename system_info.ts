@@ -68,7 +68,8 @@ export async function getPowerUsage(): Promise<number> {
       let totalPower = 0;
       
       // Get CPU power from turbostat
-      const cpuPower = await getTurbostatPower();
+      // const cpuPower = await getTurbostatPower();
+      const cpuPower = 0; // TODO: fix this
       totalPower += cpuPower;
 
       // Check for AMD GPU

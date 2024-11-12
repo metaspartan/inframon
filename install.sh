@@ -51,25 +51,6 @@ if ! command -v bun &> /dev/null; then
     fi
 fi
 
-# Install linux-common-tools
-if [[ "$OS_TYPE" == "linux" ]]; then
-    print_status "Installing linux-common-tools..."
-    sudo apt install linux-common-tools -y
-fi
-
-# Add sudoers entry for turbostat on Linux
-if [[ "$OS_TYPE" == "linux" ]]; then
-    print_status "Configuring turbostat permissions..."
-    # Remove any existing sudoers file
-    sudo rm -f /etc/sudoers.d/inframon
-    # Create a new sudoers file for inframon
-    echo "%sudo ALL=(ALL) NOPASSWD: /usr/bin/turbostat" | sudo tee /etc/sudoers.d/inframon
-    # Set correct permissions
-    sudo chmod 440 /etc/sudoers.d/inframon
-    # Validate sudoers file
-    sudo visudo -c
-fi
-
 # Clone repository
 print_status "Cloning Inframon repository..."
 if [ -n "$SUDO_USER" ]; then
