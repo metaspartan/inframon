@@ -86,7 +86,7 @@ export async function getPowerUsage(): Promise<number> {
           // const output = await executeCommand('rocm-smi --showpower');
           // const match = output.match(/Current Socket Graphics Package Power \(W\):\s*(\d+\.\d+)/);
           // const gpuPower = match ? parseFloat(match[1]) : 0;
-          totalPower += gpuPower;
+
         } catch (error) {
           console.error('Error getting AMD power usage:', error);
         }
