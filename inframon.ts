@@ -215,7 +215,7 @@ function checkNodeStatus() {
   nodes.forEach((node, id) => {
     const timeSinceHeartbeat = now.getTime() - new Date(node.lastHeartbeat ?? '').getTime();
     
-    if (timeSinceHeartbeat > 10000) { // 10 seconds
+    if (timeSinceHeartbeat > 25000) { // 25 seconds
       node.status = NodeStatus.DISCONNECTED;
       nodes.set(id, node);
       console.log(`Node ${node.name} (${node.ip}) disconnected`);
