@@ -161,14 +161,29 @@ registryApp.get('/api/nodes/:nodeId', (req, res) => {
 registryApp.post('/api/nodes/:nodeId/hostname', async (req, res) => {
   const { nodeId } = req.params;
   const { hostname } = req.body;
+  const node = nodes.get(nodeId);
+
+  if (!node) {
+    res.status(404).json({ error: 'Node not found' });
+    return;
+  }
 
   try {
-    await changeHostname(hostname);
-    const node = nodes.get(nodeId);
-    if (node) {
-      node.name = hostname;
-      nodes.set(nodeId, node);
+    // Forward the hostname change request to the actual node
+    console.log(`Forwarding hostname change to node ${node.ip}:${node.port}`);
+    const response = await fetch(`http://${node.ip}:${node.port}/api/hostname`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hostname })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to change hostname on node: ${response.status}`);
     }
+
+    // Update the node name in our registry
+    node.name = hostname;
+    nodes.set(nodeId, node);
     res.json({ success: true });
   } catch (error) {
     console.error('Error changing hostname:', error);
@@ -422,10 +437,21 @@ async function registerWithMaster(serverData: ServerData) {
 }
 
 app.get('/api/local-ip', (req, res) => {
-  const localIp = getLocalIp(); // Your existing function to get local IP
+  const localIp = getLocalIp();
   res.json({ ip: localIp });
 });
 
+app.post('/api/hostname', async (req, res) => {
+  const { hostname } = req.body;
+  try {
+    console.log(`Changing hostname to: ${hostname}`);
+    await changeHostname(hostname);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error changing hostname:', error);
+    res.status(500).json({ error: 'Failed to change hostname' });
+  }
+});
 
 app.get('/api/server-data', async (req, res) => {
   const [totalMemory, usedMemory, cpuCoreCount, gpuCoreCount] = await Promise.all([
