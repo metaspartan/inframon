@@ -19,6 +19,7 @@ export interface ServerData {
   totalMemory: number;
   usedMemory: number;
   cpuCoreCount: number;
+  gpuCoreCount: number;
   systemName: string;
   uptime: string;
   cpuModel: string;
@@ -27,6 +28,13 @@ export interface ServerData {
     used: number;
     available: number;
   };
+  logs: string;
+}
+
+export enum NodeStatus {
+  CONNECTED = 'connected',
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting'
 }
 
 export interface ServerNode {
@@ -38,6 +46,8 @@ export interface ServerNode {
   lastSeen: Date;
   isMaster: boolean;
   compressedData?: string;
+  status: NodeStatus;
+  lastHeartbeat: Date | null;
 }
 
 export interface NodeWithData extends ServerNode {
@@ -49,4 +59,17 @@ export interface RegistryConfig {
   masterUrl?: string;
   nodePort: number;
   frontendPort: number;
+}
+
+export type SortOption = 'master' | 'name' | 'cpu' | 'gpu' | 'memory' | 'power';
+export type SortDirection = 'asc' | 'desc';
+export type OSFilter = 'all' | 'macos' | 'linux';
+export type NodeTypeFilter = 'all' | 'master' | 'worker';
+
+export interface SortPreferences {
+  sortBy: SortOption;
+  direction: SortDirection;
+  order: string[];
+  osFilter: OSFilter;
+  nodeTypeFilter: NodeTypeFilter;
 }

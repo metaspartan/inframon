@@ -28,12 +28,82 @@ async function executeCommand(command: string): Promise<string> {
   });
 }
 
+const isAMD = async (): Promise<boolean> => {
+  try {
+    const output = await executeCommand('lspci | grep -i amd');
+    return output.toLowerCase().includes('amd') || output.toLowerCase().includes('radeon');
+  } catch (error) {
+    return false;
+  }
+};
+
+const isNVIDIA = async (): Promise<boolean> => {
+  try {
+    const output = await executeCommand('lspci | grep -i nvidia');
+    return output.toLowerCase().includes('nvidia');
+  } catch (error) {
+    return false;
+  }
+};
+
+async function getTurbostatPower(): Promise<number> {
+  try {
+    const output = await executeCommand('sudo turbostat --Summary --quiet --show PkgWatt --interval 1');
+    const lines = output.trim().split('\n');
+    if (lines.length >= 2) {
+      // Get the second line (first measurement after header)
+      const powerValue = parseFloat(lines[1]);
+      return isNaN(powerValue) ? 0 : powerValue;
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error getting turbostat power:', error);
+    return 0;
+  }
+}
+
 export async function getPowerUsage(): Promise<number> {
   if (isLinux) {
     try {
-      const output = await executeCommand('cat /sys/class/hwmon/hwmon*/power1_input');
-      const microwatts = parseInt(output, 10);
-      return isNaN(microwatts) ? 0 : microwatts / 1_000_000;
+      let totalPower = 0;
+      
+      // Get CPU power from turbostat
+      const cpuPower = await getTurbostatPower();
+      totalPower += cpuPower;
+
+      // Check for AMD GPU
+      const isAMDGPU = await isAMD();
+      if (isAMDGPU) {
+        try {
+          // Switching to use rocm-smi combined with turbostat for power usage
+          // const output = await executeCommand('cat /sys/class/hwmon/hwmon*/power1_input');
+          // const microwatts = parseInt(output, 10);
+          // const gpuPower = isNaN(microwatts) ? 0 : microwatts / 1_000_000;
+          // totalPower += gpuPower;
+
+          // Use rocm-smi to get power usage in watts
+          const output = await executeCommand('rocm-smi --showpower');
+          const match = output.match(/Current Socket Graphics Package Power \(W\):\s*(\d+\.\d+)/);
+          const gpuPower = match ? parseFloat(match[1]) : 0;
+          totalPower += gpuPower;
+        } catch (error) {
+          console.error('Error getting AMD power usage:', error);
+        }
+      }
+
+      // Check for NVIDIA GPU
+      const isNVIDIAGPU = await isNVIDIA();
+      if (isNVIDIAGPU) {
+        try {
+          const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits');
+          const gpuPower = parseFloat(output);
+          totalPower += isNaN(gpuPower) ? 0 : gpuPower;
+        } catch (error) {
+          console.error('Error getting NVIDIA power usage:', error);
+        }
+      }
+
+      return totalPower;
     } catch (error) {
       console.error('Error getting power usage:', error);
       return 0;
@@ -147,6 +217,14 @@ export async function getLocalIp(): Promise<string> {
     }
   }
   return 'Unknown';
+}
+
+export async function changeHostname(newHostname: string): Promise<void> {
+  if (isLinux) {
+    await executeCommand(`sudo hostnamectl set-hostname ${newHostname}`);
+  } else if (isMacOS) {
+    await executeCommand(`sudo scutil --set HostName ${newHostname}`);
+  }
 }
 
 export async function isCloudflaredRunning(): Promise<boolean> {
@@ -393,8 +471,78 @@ export async function getGpuUsage(): Promise<number> {
       console.error('Error getting GPU usage:', error);
       return 0;
     }
+  } else if (isLinux) {
+    try {
+      // Check for AMD first
+      const isAMDGPU = await isAMD();
+      if (isAMDGPU) {
+        try {
+          const output = await executeCommand('rocm-smi --showuse');
+          const match = output.match(/GPU use \(%\):\s*(\d+)/);
+          return match ? parseFloat(match[1]) : 0;
+        } catch (error) {
+          console.error('Error getting AMD GPU usage:', error);
+        }
+      }
+
+      // Check for NVIDIA
+      const isNVIDIAGPU = await isNVIDIA();
+      if (isNVIDIAGPU) {
+        try {
+          const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
+          return parseFloat(output);
+        } catch (error) {
+          console.error('Error getting NVIDIA GPU usage:', error);
+        }
+      }
+
+      return 0;
+    } catch (error) {
+      console.error('Error getting GPU usage:', error);
+      return 0;
+    }
   }
   return 0;
+}
+
+export async function getGpuCoreCount(): Promise<number> {
+  if (isMacOS) {
+    try {
+      const output = await executeCommand('system_profiler -detailLevel basic SPDisplaysDataType');
+      const lines = output.split('\n');
+      for (const line of lines) {
+        if (line.includes('Total Number of Cores')) {
+          const parts = line.split(':');
+          if (parts.length > 1) {
+            const cores = parseInt(parts[1].trim(), 10);
+            return isNaN(cores) ? 0 : cores;
+          }
+          break;
+        }
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error getting GPU core count:', error);
+      return 0;
+    }
+  }
+  return 0;
+}
+
+// get the inframon logs for this node
+export async function getInframonLogs(): Promise<string> {
+  try {
+    const location = process.cwd();
+    const stdout = await executeCommand(`cat ${location}/inframon.stdout.log 2>/dev/null || echo "No stdout log file"`);
+    const stderr = await executeCommand(`cat ${location}/inframon.stderr.log 2>/dev/null || echo "No stderr log file"`);
+    // or other log files
+    const out = await executeCommand(`cat ${location}/inframon.out.log 2>/dev/null || echo "No out log file"`);
+    const err = await executeCommand(`cat ${location}/inframon.err.log 2>/dev/null || echo "No err log file"`); 
+    return `=== STDOUT ===\n${stdout.trim()}\n\n=== STDERR ===\n${stderr.trim()}\n\n=== OUT ===\n${out.trim()}\n\n=== ERR ===\n${err.trim()}`;
+  } catch (error) {
+    console.error('Error getting inframon logs:', error);
+    return 'Unable to retrieve logs';
+  }
 }
 
 // export async function getNvmeInfo(): Promise<{ total: number; used: number }> {

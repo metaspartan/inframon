@@ -11,12 +11,13 @@ import { NodesContext } from '@/contexts/NodesContext';
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Slash } from 'lucide-react';
+import { SortProvider } from '@/contexts/SortContext';
+import { CombinedLogs } from '@/components/CombinedLogs';
 
 
 function DashboardWrapper() {
@@ -130,10 +131,12 @@ function App() {
                   totalMemory: 0,
                   usedMemory: 0,
                   cpuCoreCount: 0,
+                  gpuCoreCount: 0,
                   systemName: 'Unknown',
                   uptime: '',
                   cpuModel: '',
-                  storageInfo: { total: 0, used: 0, available: 0 }
+                  storageInfo: { total: 0, used: 0, available: 0 },
+                  logs: ''
                 }
               };
             }
@@ -155,8 +158,9 @@ function App() {
     <BrowserRouter>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <NodesContext.Provider value={[nodes, setNodes]}>
-          <SidebarProvider>
-          <div className="flex h-screen w-screen overflow-hidden">
+          <SortProvider>
+            <SidebarProvider>
+              <div className="flex h-screen w-screen overflow-hidden">
             <AppSidebar nodes={nodes} />
             <main className="flex-1 overflow-auto">
               <div className="p-4 w-full">
@@ -167,11 +171,13 @@ function App() {
                 <Routes>
                   <Route path="/" element={<NodeList nodes={nodes} />} />
                   <Route path="/node/:nodeId" element={<DashboardWrapper />} />
+                  <Route path="/logs" element={<CombinedLogs nodes={nodes} />} />
                 </Routes>
               </div>
             </main>
-          </div>
-          </SidebarProvider>
+              </div>
+            </SidebarProvider>
+          </SortProvider>
         </NodesContext.Provider>
       </ThemeProvider>
     </BrowserRouter>

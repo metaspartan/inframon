@@ -71,11 +71,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium text-muted-foreground">CPU Cores</CardTitle>
+    <CardTitle className="text-sm font-medium text-muted-foreground">{isAppleSilicon(data.cpuModel) 
+                                          ? `CPU/GPU Cores`
+                                          : 'CPU Cores'
+                                        }</CardTitle>
     <CpuIcon className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
-    <div className="text-2xl font-bold">{data.cpuCoreCount}</div>
+    <div className="text-2xl font-bold">{isAppleSilicon(data.cpuModel) 
+                                          ? `${data.cpuCoreCount}/${data.gpuCoreCount}`
+                                          : data.cpuCoreCount
+                                        }</div>
   </CardContent>
 </Card>
 
@@ -135,7 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       </Card> */}
 
     </div>
-    <div className={`mt-4 grid gap-4 ${isAppleSilicon(data.cpuModel) ? 'sm:grid-cols-2' : 'lg:grid-cols-1'} mb-4`}>
+    <div className={`mt-4 grid gap-4 sm:grid-cols-2 mb-4`}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Storage</CardTitle>
@@ -149,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <Progress value={(data.storageInfo.used / data.storageInfo.total) * 100} className="mt-2" />
             </CardContent>
           </Card>
-          {isAppleSilicon(data.cpuModel) && (
+          {/* {isAppleSilicon(data.cpuModel) && ( */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">GPU Usage</CardTitle>
@@ -160,7 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <Progress value={data.gpuUsage || 0} className="mt-2" />
             </CardContent>
           </Card>
-        )}
+        {/* )} */}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-full">
 
@@ -179,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           color="hsl(var(--chart-2))"
           unit="%"
         />
-        {isAppleSilicon(data.cpuModel) && (<>
+        {/* {isAppleSilicon(data.cpuModel) && (<> */}
         <Chart 
           data={data.gpuHistory} 
           timePoints={data.timePoints} 
@@ -193,8 +199,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           title="Power Usage"
           color="hsl(var(--chart-3))"
           unit="W"
-        /></>
-        )}
+        />
+        {/* )} */}
         {/* <Chart 
           data={data.powerHistory} 
           timePoints={data.timePoints} 
@@ -217,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="B/s"
         /> */}
       </div>
-      {!isAppleSilicon(data.cpuModel) && (
+      {/* {!isAppleSilicon(data.cpuModel) && (
       <div className="grid col-span-full grid-cols-1 lg:grid-cols-1">
       <Chart 
           data={data.powerHistory} 
@@ -227,7 +233,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           unit="W"
         />
       </div>
-      )}
+      )} */}
 
         </div>
 

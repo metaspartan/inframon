@@ -4,11 +4,7 @@
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/metaspartan)
 ![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fmetaspartan%2Finframon)
 
-Inframon Server Monitor is a lightweight, real-time local networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics through a local web interface. Auto Master Node Local Network Discovery is supported (multiple devices supported). Written by Carsen Klock
-
-#### This is currently intended only to be used with Apple Silicon Macs (any M-series chip) OR Linux AMD machines with ROCm GPU drivers installed.
-
-#### TODO: Linux NVIDIA Support
+Inframon Server Monitor is a lightweight, real-time local networked monitoring application that provides a sleek local networked dashboard for tracking various system metrics through a local web interface. Auto Master Node Local Network Discovery is supported (multiple devices supported Apple Silicon Macs and Linux AMD/NVIDIA). Written by Carsen Klock
 
 ## Install Script
 
@@ -36,6 +32,7 @@ sudo ./inframon-install.sh
 - Local IP address display (with toggle to show/hide)
 - Cloudflared status indicator
 - GPU usage monitoring for Apple Silicon Macs
+- GPU usage monitoring for Linux AMD/NVIDIA (ROCm or NVIDIA CUDA drivers required)
 - Local Networked Node list with power usage, cpu usage, memory usage, and more
 - Master and Node modes (One master, for multiple nodes)
 - Install script for easy setup
@@ -44,11 +41,16 @@ sudo ./inframon-install.sh
 ## Supported Platforms and Devices
 
 - MacOS (Apple Silicon)
-- Linux (x86_64) AMD Ryzen Only (Requires ROCm GPU drivers installed)
+- AMD Linux (x86_64) (Requires ROCm GPU drivers installed)
+- NVIDIA Linux (x86_64) (Requires NVIDIA CUDA drivers installed)
 
 ## Requirements
 - Bun (https://bun.sh)
 - Local Network Access (Master and Nodes)
+
+- AMD GPUs are supported with ROCm drivers installed (https://rocm.docs.amd.com/en/latest/install.html)
+- NVIDIA GPUs are supported with the NVIDIA CUDA drivers installed (https://developer.nvidia.com/cuda-downloads)
+- Linux Required Packages: `sudo apt install linux-common-tools`
 
 ## Install Script
 
