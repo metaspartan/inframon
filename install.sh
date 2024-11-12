@@ -54,6 +54,9 @@ fi
 # Clone repository
 print_status "Cloning Inframon repository..."
 if [ -n "$SUDO_USER" ]; then
+    if [[ "$OS_TYPE" == "linux" ]]; then
+        sudo systemctl stop inframon
+    fi
     sudo rm -rf inframon
     # Clone as the actual user instead of root
     sudo -u "$SUDO_USER" git clone https://github.com/metaspartan/inframon.git
@@ -115,8 +118,8 @@ fi
 if [[ "$(uname)" == "Darwin" ]]; then
     if [[ -f /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist ]]; then
         print_status "Removing old launchd service..."
-        launchctl bootout system/com.inframon.service 2>/dev/null || true
-        launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
+        sudo -u "$SUDO_USER" launchctl bootout system/com.inframon.service 2>/dev/null || true
+        sudo -u "$SUDO_USER" launchctl unload -w /Users/$SUDO_USER/Library/LaunchAgents/com.inframon.service.plist 2>/dev/null || true
     fi
 
     APP_DIR=$(pwd)
