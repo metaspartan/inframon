@@ -155,7 +155,7 @@ if [[ "$OS_TYPE" == "linux" ]]; then
         sudo chmod 440 /etc/sudoers.d/nvidia-smi
         sudo visudo -c
     else
-        print_status "nvidia-smi not found, GPU monitoring may be limited"
+        print_status "nvidia-smi not found under sudo, GPU monitoring may be limited, try syslink your 'which nvidia-smi' path to /usr/local/bin/nvidia-smi"
     fi
 fi
 
