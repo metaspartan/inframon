@@ -147,37 +147,37 @@ async function executeCommand(command: string): Promise<string> {
 
 const isAMD = async (): Promise<boolean> => {
   try {
-    const output = await executeCommand('lspci | grep -i amd');
-    return output.toLowerCase().includes('amd') || output.toLowerCase().includes('radeon');
-  } catch (error) {
+    await executeCommand('which rocm-smi');
+    return true;
+  } catch {
     return false;
   }
 };
 
 const isNVIDIA = async (): Promise<boolean> => {
   try {
-    const output = await executeCommand('lspci | grep -i nvidia');
-    return output.toLowerCase().includes('nvidia');
-  } catch (error) {
+    await executeCommand('which nvidia-smi');
+    return true;
+  } catch {
     return false;
   }
 };
 
-async function getTurbostatPower(): Promise<number> {
-  try {
-    const output = await executeCommand('sudo turbostat --Summary --quiet --show PkgWatt --interval 1');
-    const lines = output.trim().split('\n');
-    if (lines.length >= 2) {
-      // Get the second line (first measurement after header)
-      const powerValue = parseFloat(lines[1]);
-      return isNaN(powerValue) ? 0 : powerValue;
-    }
-    return 0;
-  } catch (error) {
-    console.error('Error getting turbostat power:', error);
-    return 0;
-  }
-}
+// async function getTurbostatPower(): Promise<number> {
+//   try {
+//     const output = await executeCommand('sudo turbostat --Summary --quiet --show PkgWatt --interval 1');
+//     const lines = output.trim().split('\n');
+//     if (lines.length >= 2) {
+//       // Get the second line (first measurement after header)
+//       const powerValue = parseFloat(lines[1]);
+//       return isNaN(powerValue) ? 0 : powerValue;
+//     }
+//     return 0;
+//   } catch (error) {
+//     console.error('Error getting turbostat power:', error);
+//     return 0;
+//   }
+// }
 
 export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
   if (isMacOS) {
