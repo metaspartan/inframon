@@ -31,7 +31,6 @@ import {
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
 import { compressData } from './src/lib/utils';
-
 import { NodeDiscovery } from './src/lib/discovery';
 
 const discovery = new NodeDiscovery();
@@ -59,23 +58,6 @@ registryApp.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const nodes = new Map<string, ServerNode>();
 
-// function downsampleData(data: number[], timePoints: string[], targetPoints: number) {
-//   if (data.length <= targetPoints) return { data, timePoints };
-  
-//   const factor = Math.floor(data.length / targetPoints);
-//   const downsampled = [];
-//   const downsampledTime = [];
-  
-//   for (let i = 0; i < data.length; i += factor) {
-//     const chunk = data.slice(i, i + factor);
-//     const avg = chunk.reduce((a, b) => a + b, 0) / chunk.length;
-//     downsampled.push(avg as never);
-//     downsampledTime.push(timePoints[i] as never);
-//   }
-  
-//   return { data: downsampled, timePoints: downsampledTime };
-// }
-
 registryApp.post('/api/nodes/register', (req, res) => {
   try {
     const node = req.body;
@@ -90,7 +72,6 @@ registryApp.post('/api/nodes/register', (req, res) => {
       ip: node.ip,
       port: node.port,
       lastSeen: new Date(),
-      // lastHeartbeat: new Date(),
       status: NodeStatus.CONNECTING,
       isMaster: node.isMaster,
       compressedData: node.compressedData
@@ -102,7 +83,6 @@ registryApp.post('/api/nodes/register', (req, res) => {
 
     if (existingNode) {
       existingNode.lastSeen = new Date();
-      // existingNode.lastHeartbeat = new Date();
       existingNode.status = NodeStatus.CONNECTED;
       existingNode.compressedData = node.compressedData;
       existingNode.name = node.name;
@@ -130,7 +110,6 @@ registryApp.get('/api/nodes', (req, res) => {
       lastSeen: node.lastSeen,
       isMaster: node.isMaster,
       status: node.status,
-      // lastHeartbeat: node.lastHeartbeat,
       compressedData: node.compressedData // Send only compressed data
     }));
   res.json(activeNodes);
@@ -225,21 +204,6 @@ registryApp.post('/api/nodes/:nodeId/heartbeat', (req, res) => {
 });
 
 console.log(`Master Node: ${config.isMaster}`);
-
-// function checkNodeStatus() {
-//   const now = new Date();
-//   nodes.forEach((node, id) => {
-//     const timeSinceHeartbeat = now.getTime() - new Date(node.lastSeen ?? '').getTime();
-    
-//     if (timeSinceHeartbeat > 25000) { // 25 seconds
-//       node.status = NodeStatus.DISCONNECTED;
-//       nodes.set(id, node);
-//       console.log(`Node ${node.name} (${node.ip}) disconnected`);
-//       // remove node from nodes map
-//       nodes.delete(id);
-//     }
-//   });
-// }
 
 // Start registry server first if master
 if (config.isMaster) {
@@ -337,14 +301,6 @@ async function updateHistory() {
   if (config.isMaster) {
     const compressedData = {
       ...serverData,
-      // cpuHistory: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).data,
-      // gpuHistory: downsampleData(serverData.gpuHistory, serverData.timePoints, 360).data,
-      // memoryHistory: downsampleData(serverData.memoryHistory, serverData.timePoints, 360).data,
-      // powerHistory: downsampleData(serverData.powerHistory, serverData.timePoints, 360).data,
-      // networkRxHistory: downsampleData(serverData.networkRxHistory, serverData.timePoints, 360).data,
-      // networkTxHistory: downsampleData(serverData.networkTxHistory, serverData.timePoints, 360).data,
-      // timePoints: downsampleData(serverData.cpuHistory, serverData.timePoints, 360).timePoints,
-      // timePoints: serverData.timePoints.slice(-60)
     };
     // Master node updates its own data in the registry
     const node: ServerNode = {
@@ -356,7 +312,6 @@ async function updateHistory() {
       lastSeen: new Date(),
       isMaster: true,
       status: NodeStatus.CONNECTED,
-      // lastHeartbeat: new Date(),
       compressedData: compressData(compressedData) ?? ''
     };
     nodes.set(nodeId, node);
@@ -367,27 +322,12 @@ async function updateHistory() {
   }
 }
 
-// Update history every second
-// setInterval(updateHistory, 1000);
-
 async function registerWithMaster(serverData: ServerData) {
   if (!config.isMaster) {
     try {
-      // Take only last 60 points for histories
       const compressedData = {
         ...serverData,
-        // cpuHistory: serverData.cpuHistory.slice(-60),
-        // gpuHistory: serverData.gpuHistory.slice(-60),
-        // memoryHistory: serverData.memoryHistory.slice(-60),
-        // powerHistory: serverData.powerHistory.slice(-60),
-        // networkRxHistory: serverData.networkRxHistory.slice(-60),
-        // networkTxHistory: serverData.networkTxHistory.slice(-60),
-        // timePoints: serverData.timePoints.slice(-60)
       };
-
-      // console.log('Compressed Data:', JSON.stringify(compressedData, null, 2));
-
-      // console.log('Data before compression:', JSON.stringify(serverData, null, 2));
 
       const node = {
         id: nodeId,
@@ -398,7 +338,6 @@ async function registerWithMaster(serverData: ServerData) {
         lastSeen: new Date(),
         isMaster: false,
         status: NodeStatus.CONNECTED,
-        // lastHeartbeat: new Date(),
         compressedData: compressData(compressedData)
       };
 
@@ -414,23 +353,6 @@ async function registerWithMaster(serverData: ServerData) {
         throw new Error(`Failed to register with master: ${response.status}`);
       }
 
-      // Start heartbeat interval
-      // const heartbeatInterval = setInterval(async () => {
-      //   try {
-      //     const heartbeatResponse = await fetch(`${config.masterUrl}/api/nodes/${nodeId}/heartbeat`, {
-      //       method: 'POST'
-      //     });
-      //     if (!heartbeatResponse.ok) {
-      //       console.error('Heartbeat failed, attempting to re-register...');
-      //       clearInterval(heartbeatInterval);
-      //       setTimeout(() => registerWithMaster(serverData), 5000);
-      //     }
-      //   } catch (error) {
-      //     console.error('Heartbeat failed:', error);
-      //     clearInterval(heartbeatInterval);
-      //     setTimeout(() => registerWithMaster(serverData), 5000);
-      //   }
-      // }, 5000);
     } catch (error) {
       console.error('Failed to register with master:', error);
       setTimeout(() => registerWithMaster(serverData), 5000);
@@ -508,8 +430,6 @@ app.listen(port, () => {
 // Initial history update
 updateHistory();
 
-// const FRONTEND_PORT = 3869;
-
 // Frontend Static 
 const frontendApp = express();
 frontendApp.use(cors());
@@ -533,7 +453,7 @@ frontendApp.listen(FPORT, () => {
   console.log(`Inframon frontend is running on http://${localIp}:${FPORT}`);
 });
 
-// kill server monitor this app
+// kill inframon
 process.on('SIGINT', () => {
   console.log('Inframon is shutting down');
   nodes.clear();

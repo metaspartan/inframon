@@ -148,6 +148,7 @@ async function executeCommand(command: string): Promise<string> {
 const isAMD = async (): Promise<boolean> => {
   try {
     await executeCommand('which rocm-smi');
+    console.log('AMD GPU detected');
     return true;
   } catch {
     return false;
@@ -157,6 +158,7 @@ const isAMD = async (): Promise<boolean> => {
 const isNVIDIA = async (): Promise<boolean> => {
   try {
     await executeCommand('which nvidia-smi');
+    console.log('NVIDIA GPU detected');
     return true;
   } catch {
     return false;
