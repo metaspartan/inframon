@@ -149,14 +149,10 @@ async function executeCommand(command: string): Promise<string> {
 
 const isAMD = async (): Promise<boolean> => {
   try {
-    const output = await executeCommand('which rocm-smi');
-    const hasRocm = output.trim().length > 0;
-    
-    if (hasRocm) {
-      console.log('AMD GPU detected:', output);
-      return true;
-    }
-    return false;
+    // Try to get GPU info directly using rocm-smi
+    const output = await executeCommand('rocm-smi --showproductname');
+    console.log('AMD GPU check output:', output);
+    return output.includes('AMD') || output.includes('Radeon');
   } catch (error) {
     console.log('No AMD GPU detected:', error);
     return false;
@@ -165,21 +161,10 @@ const isAMD = async (): Promise<boolean> => {
 
 const isNVIDIA = async (): Promise<boolean> => {
   try {
-    const output = await executeCommand('which nvidia-smi');
-    const hasNvidia = output.trim().length > 0;
-    
-    if (hasNvidia) {
-      // Double check by trying to query the GPU
-      try {
-        await executeCommand('nvidia-smi -L');
-        console.log('NVIDIA GPU detected:', output);
-        return true;
-      } catch (error) {
-        console.log('nvidia-smi found but failed to query GPU:', error);
-        return false;
-      }
-    }
-    return false;
+    // Try to list NVIDIA GPUs directly
+    const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits');
+    console.log('NVIDIA GPU check output:', output);
+    return output.includes('NVIDIA');
   } catch (error) {
     console.log('No NVIDIA GPU detected:', error);
     return false;
