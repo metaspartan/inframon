@@ -140,6 +140,25 @@ if [[ "$(uname)" == "Darwin" ]]; then
     fi
 fi
 
+# Find nvidia-smi path as the non-root user
+if [[ "$OS_TYPE" == "linux" ]]; then
+    print_status "Checking for NVIDIA GPU..."
+    NVIDIA_SMI_PATH=$(sudo -u "$SUDO_USER" which nvidia-smi)
+    
+    if [ ! -z "$NVIDIA_SMI_PATH" ]; then
+        print_status "Found nvidia-smi at: $NVIDIA_SMI_PATH"
+        # Add to service environment
+        echo "NVIDIA_SMI_PATH=$NVIDIA_SMI_PATH" >> .env
+        
+        # Add sudoers entry for the specific path
+        echo "%sudo ALL=(ALL) NOPASSWD: $NVIDIA_SMI_PATH" | sudo tee /etc/sudoers.d/nvidia-smi
+        sudo chmod 440 /etc/sudoers.d/nvidia-smi
+        sudo visudo -c
+    else
+        print_status "nvidia-smi not found, GPU monitoring may be limited"
+    fi
+fi
+
 # Ask about systemd service installation
 if [[ "$OS_TYPE" == "linux" ]]; then
     while true; do
