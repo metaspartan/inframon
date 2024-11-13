@@ -154,29 +154,50 @@ async function executeCommand(command: string, asUser: boolean = false): Promise
   });
 }
 
-const isAMD = async (): Promise<boolean> => {
-  try {
-    // Try to get GPU info directly using rocm-smi
-    const output = await executeCommand('rocm-smi --showproductname');
-    console.log('AMD GPU check output:', output);
-    return output.includes('AMD') || output.includes('Radeon');
-  } catch (error) {
-    console.log('No AMD GPU detected:', error);
-    return false;
-  }
+// At the top of the file with other interfaces
+interface GPUState {
+  hasNVIDIA: boolean;
+  hasAMD: boolean;
+  initialized: boolean;
+}
+
+// Global GPU state
+let gpuState: GPUState = {
+  hasNVIDIA: false,
+  hasAMD: false,
+  initialized: false
 };
 
-const isNVIDIA = async (): Promise<boolean> => {
+// Initialize GPU detection once
+async function initializeGPUState() {
+  if (gpuState.initialized) return;
+
   try {
-    // Try to list NVIDIA GPUs directly
-    const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits', true);
-    console.log('NVIDIA GPU check output:', output);
-    return output.includes('NVIDIA');
-  } catch (error) {
-    console.log('No NVIDIA GPU detected:', error);
-    return false;
+    // Check NVIDIA
+    try {
+      const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits', true);
+      gpuState.hasNVIDIA = output.includes('NVIDIA');
+      console.log('NVIDIA GPU detected:', output.trim());
+    } catch (error) {
+      gpuState.hasNVIDIA = false;
+      console.log('No NVIDIA GPU available');
+    }
+
+    // Check AMD
+    try {
+      const output = await executeCommand('rocm-smi --showproductname');
+      gpuState.hasAMD = output.includes('AMD') || output.includes('Radeon');
+      console.log('AMD GPU detected:', output.trim());
+    } catch (error) {
+      gpuState.hasAMD = false;
+      console.log('No AMD GPU available');
+    }
+  } finally {
+    gpuState.initialized = true;
   }
-};
+}
+
+await initializeGPUState();
 
 // async function getTurbostatPower(): Promise<number> {
 //   try {
@@ -229,8 +250,7 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
   } else if (isLinux) {
     try {
       // Check for NVIDIA GPU
-      const isNVIDIAGPU = await isNVIDIA();
-      if (isNVIDIAGPU) {
+      if (gpuState.hasNVIDIA) {
         const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader', true);
         const [name, memoryStr] = output.split(',').map(s => s.trim());
         const memory = parseInt(memoryStr);
@@ -248,8 +268,7 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
       }
       
       // Check for AMD GPU
-      const isAMDGPU = await isAMD();
-      if (isAMDGPU) {
+      if (gpuState.hasAMD) {
         // Add AMD detection logic here
         return {
           model: 'Linux Box (AMD)',
@@ -282,8 +301,7 @@ export async function getPowerUsage(): Promise<number> {
       totalPower += cpuPower;
 
       // Check for AMD GPU
-      const isAMDGPU = await isAMD();
-      if (isAMDGPU) {
+      if (gpuState.hasAMD) {
         try {
           // Switching to use power1_input for AMD power usage
           const output = await executeCommand('cat /sys/class/hwmon/hwmon*/power1_input');
@@ -302,8 +320,7 @@ export async function getPowerUsage(): Promise<number> {
       }
 
       // Check for NVIDIA GPU
-      const isNVIDIAGPU = await isNVIDIA();
-      if (isNVIDIAGPU) {
+      if (gpuState.hasNVIDIA) {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits', true);
           const gpuPower = parseFloat(output.trim()); // Add trim() to remove any whitespace
@@ -686,8 +703,7 @@ export async function getGpuUsage(): Promise<number> {
   } else if (isLinux) {
     try {
       // Check for AMD first
-      const isAMDGPU = await isAMD();
-      if (isAMDGPU) {
+      if (gpuState.hasAMD) {
         try {
           const output = await executeCommand('rocm-smi --showuse');
           const match = output.match(/GPU use \(%\):\s*(\d+)/);
@@ -698,8 +714,7 @@ export async function getGpuUsage(): Promise<number> {
       }
 
       // Check for NVIDIA
-      const isNVIDIAGPU = await isNVIDIA();
-      if (isNVIDIAGPU) {
+      if (gpuState.hasNVIDIA) {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits', true);
           const usage = parseInt(output.trim(), 10);
