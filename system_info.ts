@@ -149,20 +149,39 @@ async function executeCommand(command: string): Promise<string> {
 
 const isAMD = async (): Promise<boolean> => {
   try {
-    await executeCommand('which rocm-smi');
-    console.log('AMD GPU detected');
-    return true;
-  } catch {
+    const output = await executeCommand('which rocm-smi');
+    const hasRocm = output.trim().length > 0;
+    
+    if (hasRocm) {
+      console.log('AMD GPU detected:', output);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.log('No AMD GPU detected:', error);
     return false;
   }
 };
 
 const isNVIDIA = async (): Promise<boolean> => {
   try {
-    await executeCommand('which nvidia-smi');
-    console.log('NVIDIA GPU detected');
-    return true;
-  } catch {
+    const output = await executeCommand('which nvidia-smi');
+    const hasNvidia = output.trim().length > 0;
+    
+    if (hasNvidia) {
+      // Double check by trying to query the GPU
+      try {
+        await executeCommand('nvidia-smi -L');
+        console.log('NVIDIA GPU detected:', output);
+        return true;
+      } catch (error) {
+        console.log('nvidia-smi found but failed to query GPU:', error);
+        return false;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.log('No NVIDIA GPU detected:', error);
     return false;
   }
 };
@@ -223,12 +242,16 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
         const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader');
         const [name, memoryStr] = output.split(',').map(s => s.trim());
         const memory = parseInt(memoryStr);
+
+        const normalizedName = name.toUpperCase()
+        .replace(/\s+/g, ' ')
+        .trim();
         
         return {
           model: `Linux Box (${name})`,
-          chip: name.toUpperCase(),
+          chip: normalizedName,
           memory,
-          flops: CHIP_FLOPS[name.toUpperCase()] || { fp32: 0, fp16: 0, int8: 0 }
+          flops: CHIP_FLOPS[normalizedName] || { fp32: 0, fp16: 0, int8: 0 }
         };
       }
       

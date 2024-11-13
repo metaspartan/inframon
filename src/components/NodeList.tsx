@@ -527,7 +527,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
                                     <span className="text-sm">{((node.data.storageInfo.used / node.data.storageInfo.total) * 100).toFixed(1)}%</span>
                                   </div>
 
-                                  {node.data.powerUsage && (
+                                  {node.data.powerUsage > 0 && (
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center space-x-2">
                                         <ZapIcon className="h-4 w-4" />
