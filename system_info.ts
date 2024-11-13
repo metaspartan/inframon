@@ -287,8 +287,10 @@ export async function getPowerUsage(): Promise<number> {
       if (isNVIDIAGPU) {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits');
-          const gpuPower = parseFloat(output);
-          totalPower += isNaN(gpuPower) ? 0 : gpuPower;
+          const gpuPower = parseFloat(output.trim()); // Add trim() to remove any whitespace
+          if (!isNaN(gpuPower)) {
+            totalPower += gpuPower;
+          }
         } catch (error) {
           console.error('Error getting NVIDIA power usage:', error);
         }
@@ -681,7 +683,10 @@ export async function getGpuUsage(): Promise<number> {
       if (isNVIDIAGPU) {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
-          return parseFloat(output);
+          const usage = parseFloat(output.trim());
+          if (!isNaN(usage)) {
+            return Number(usage.toFixed(1));
+          }
         } catch (error) {
           console.error('Error getting NVIDIA GPU usage:', error);
         }
