@@ -104,6 +104,35 @@ fi
 #     sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock $(which bun)
 # fi
 
+# Function to find bun executable
+find_bun_executable() {
+    # Try common locations
+    local locations=(
+        "/usr/bin/bun"
+        "/usr/local/bin/bun"
+        "$HOME/.bun/bin/bun"
+        "/home/$SUDO_USER/.bun/bin/bun"
+    )
+
+    # Use which command first
+    local bun_path=$(which bun 2>/dev/null)
+    if [ -n "$bun_path" ] && [ -x "$bun_path" ]; then
+        echo "$bun_path"
+        return 0
+    fi
+
+    # Check common locations
+    for loc in "${locations[@]}"; do
+        if [ -x "$loc" ]; then
+            echo "$loc"
+            return 0
+        fi
+    done
+
+    # If not found, return empty
+    return 1
+}
+
 # Build the application
 print_status "Building application..."
 
@@ -141,6 +170,13 @@ if [[ "$OS_TYPE" == "linux" ]]; then
                 if [ -z "$CURRENT_USER" ]; then
                     CURRENT_USER=$(whoami)
                 fi
+
+                # Find bun executable
+                BUN_PATH=$(find_bun_executable)
+                if [ -z "$BUN_PATH" ]; then
+                    print_error "Could not find bun executable. Please ensure bun is installed correctly."
+                    exit 1
+                fi
                 
                 # Create systemd service file
                 cat > /etc/systemd/system/inframon.service << EOF
@@ -157,7 +193,7 @@ EOF
                 fi
 
                 cat >> /etc/systemd/system/inframon.service << EOF
-ExecStart=/usr/bin/bun run $(pwd)/inframon.ts
+ExecStart=${BUN_PATH} run $(pwd)/inframon.ts
 WorkingDirectory=$(pwd)
 Restart=always
 User=$CURRENT_USER
