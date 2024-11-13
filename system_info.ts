@@ -169,7 +169,7 @@ let gpuState: GPUState = {
 };
 
 // Initialize GPU detection once
-async function initializeGPUState() {
+export async function initializeGPUState() {
   if (gpuState.initialized) return;
 
   try {
@@ -196,8 +196,6 @@ async function initializeGPUState() {
     gpuState.initialized = true;
   }
 }
-
-await initializeGPUState();
 
 // async function getTurbostatPower(): Promise<number> {
 //   try {

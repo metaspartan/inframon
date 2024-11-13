@@ -28,6 +28,7 @@ import {
   isCloudflaredRunning,
   getInframonLogs,
   changeHostname,
+  initializeGPUState,
 } from './system_info';
 import { v4 as uuidv4 } from 'uuid';
 import { compressData } from './src/lib/utils';
@@ -44,6 +45,8 @@ const FRONTEND_PORT = config.frontendPort;
 logger; 
 
 console.log('Inframon is starting');
+
+await initializeGPUState();
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
