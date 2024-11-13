@@ -128,9 +128,9 @@ async function executeCommand(command: string, asUser: boolean = false): Promise
     // get current user
     const user = os.userInfo().username;
     // const uid = process?.getuid?.();
+    console.log('Running command as user:', user);
     if (asUser) {
-      const serviceUser = process.env.SUDO_USER || user; // Get from service file
-      command = `su - ${serviceUser} -c "${command}"`;
+      command = `su - ${user} -c "${command}"`;
     }
     const proc = spawn('sh', ['-c', command]);
     let output = '';
