@@ -6,9 +6,9 @@
 import { spawn } from 'child_process';
 import { DeviceFlops, DeviceCapabilities } from './src/types';
 import os from 'os';
-import { logger } from './src/lib/logger';
+// import { logger } from './src/lib/logger';
 
-logger;
+// logger;
 const isMacOS = os.platform() === 'darwin';
 const isLinux = os.platform() === 'linux';
 
