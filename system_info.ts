@@ -175,7 +175,7 @@ export async function initializeGPUState() {
   try {
     // Check NVIDIA
     try {
-      const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits', true);
+      const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits');
       gpuState.hasNVIDIA = output.includes('NVIDIA');
       console.log('NVIDIA GPU detected:', output.trim());
     } catch (error) {
@@ -249,7 +249,7 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
     try {
       // Check for NVIDIA GPU
       if (gpuState.hasNVIDIA) {
-        const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader', true);
+        const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader');
         const [name, memoryStr] = output.split(',').map(s => s.trim());
         const memory = parseInt(memoryStr);
 
@@ -320,7 +320,7 @@ export async function getPowerUsage(): Promise<number> {
       // Check for NVIDIA GPU
       if (gpuState.hasNVIDIA) {
         try {
-          const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits', true);
+          const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits');
           const gpuPower = parseFloat(output.trim()); // Add trim() to remove any whitespace
           if (!isNaN(gpuPower)) {
             totalPower += gpuPower;
@@ -714,7 +714,7 @@ export async function getGpuUsage(): Promise<number> {
       // Check for NVIDIA
       if (gpuState.hasNVIDIA) {
         try {
-          const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits', true);
+          const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
           const usage = parseInt(output.trim(), 10);
           console.log('NVIDIA GPU usage', usage);
           if (!isNaN(usage)) {
