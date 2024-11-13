@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { GpuBar } from './GpuBar';
+import { NodeTable } from './NodeTable';
 
 const SORT_PREFERENCES_KEY = "nodeList:sortPreferences";
 
@@ -48,6 +49,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [selectedNode, setSelectedNode] = useState<NodeWithData | null>(null);
   const [showStats, setShowStats] = useState(true);
+  const [isTableView, setIsTableView] = useState(false);
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -260,6 +262,16 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
             >
               {sortDirection === "asc" ? <><ArrowUpIcon className="h-4 w-4" /></> : <><ArrowDownIcon className="h-4 w-4" /></>}
             </Button>
+            <div className="flex items-center gap-2">
+            <Switch
+              checked={isTableView}
+              onCheckedChange={setIsTableView}
+              id="view-mode"
+            />
+            <label htmlFor="view-mode" className="text-sm text-muted-foreground">
+              View
+            </label>
+          </div>
           </div>
 
           <div className="flex gap-4 items-center">
@@ -408,6 +420,14 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
               </Card>
             )}
           </div> */}
+          {isTableView ? (
+            <NodeTable 
+              nodes={filteredAndSortedNodes} 
+              setSelectedNode={setSelectedNode}
+              setShowEditHostname={setShowEditHostname}
+              setShowDeleteConfirm={setShowDeleteConfirm}
+            />
+          ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="nodes" direction="horizontal">
             {(provided) => (
@@ -628,6 +648,7 @@ export function NodeList({ nodes }: { nodes: NodeWithData[] }) {
               )}
             </Droppable>
           </DragDropContext>
+          )}
         </div>
       </div>
 <AlertDialog open={showEditHostname} onOpenChange={setShowEditHostname}>
