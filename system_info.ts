@@ -123,21 +123,28 @@ Object.keys(CHIP_FLOPS).forEach(key => {
   CHIP_FLOPS[`${key} Laptop GPU`] = CHIP_FLOPS[key];
 });
 
-async function executeCommand(command: string): Promise<string> {
+async function executeCommand(command: string, asUser: boolean = false): Promise<string> {
   return new Promise((resolve, reject) => {
-    const process = spawn('sh', ['-c', command]);
+    // get current user
+    const user = os.userInfo().username;
+    // const uid = process?.getuid?.();
+    if (asUser) {
+      const serviceUser = process.env.SUDO_USER || user; // Get from service file
+      command = `su - ${serviceUser} -c "${command}"`;
+    }
+    const proc = spawn('sh', ['-c', command]);
     let output = '';
     let errorOutput = '';
 
-    process.stdout.on('data', (data) => {
+    proc.stdout.on('data', (data) => {
       output += data.toString();
     });
 
-    process.stderr.on('data', (data) => {
+    proc.stderr.on('data', (data) => {
       errorOutput += data.toString();
     });
 
-    process.on('close', (code) => {
+    proc.on('close', (code) => {
       if (code !== 0) {
         reject(new Error(`Command failed with code ${code}: ${errorOutput}`));
       } else {
@@ -162,7 +169,7 @@ const isAMD = async (): Promise<boolean> => {
 const isNVIDIA = async (): Promise<boolean> => {
   try {
     // Try to list NVIDIA GPUs directly
-    const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits');
+    const output = await executeCommand('nvidia-smi --query-gpu=name --format=csv,noheader,nounits', true);
     console.log('NVIDIA GPU check output:', output);
     return output.includes('NVIDIA');
   } catch (error) {
@@ -224,7 +231,7 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
       // Check for NVIDIA GPU
       const isNVIDIAGPU = await isNVIDIA();
       if (isNVIDIAGPU) {
-        const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader');
+        const output = await executeCommand('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader', true);
         const [name, memoryStr] = output.split(',').map(s => s.trim());
         const memory = parseInt(memoryStr);
 
@@ -298,7 +305,7 @@ export async function getPowerUsage(): Promise<number> {
       const isNVIDIAGPU = await isNVIDIA();
       if (isNVIDIAGPU) {
         try {
-          const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits');
+          const output = await executeCommand('nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits', true);
           const gpuPower = parseFloat(output.trim()); // Add trim() to remove any whitespace
           if (!isNaN(gpuPower)) {
             totalPower += gpuPower;
@@ -694,7 +701,7 @@ export async function getGpuUsage(): Promise<number> {
       const isNVIDIAGPU = await isNVIDIA();
       if (isNVIDIAGPU) {
         try {
-          const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
+          const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits', true);
           const usage = parseInt(output.trim(), 10);
           console.log('NVIDIA GPU usage', usage);
           if (!isNaN(usage)) {
