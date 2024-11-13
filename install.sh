@@ -41,13 +41,23 @@ print_status "Installing dependencies..."
 # Install bun
 if ! command -v bun &> /dev/null; then
     print_status "Installing Bun..."
-    curl -fsSL https://bun.sh/install | sudo bash
-    if [[ "$OS_TYPE" == "macos" ]]; then
-        export BUN_INSTALL="$HOME/.bun" 
-        export PATH="$BUN_INSTALL/bin:$PATH" 
-    fi
-    if [[ "$OS_TYPE" == "linux" ]]; then
-        source ~/.bashrc
+    if [ -n "$SUDO_USER" ]; then
+        # Install Bun as the actual user, not root
+        sudo -u "$SUDO_USER" bash -c 'curl -fsSL https://bun.sh/install | bash'
+        
+        # Add Bun to the current session's PATH
+        if [[ "$OS_TYPE" == "macos" ]]; then
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+        fi
+        if [[ "$OS_TYPE" == "linux" ]]; then
+            export BUN_INSTALL="/home/$SUDO_USER/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+            # Source the user's bashrc
+            sudo -u "$SUDO_USER" bash -c 'source ~/.bashrc'
+        fi
+    else
+        curl -fsSL https://bun.sh/install | bash
     fi
 fi
 
@@ -104,35 +114,6 @@ fi
 #     sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock $(which bun)
 # fi
 
-# Function to find bun executable
-find_bun_executable() {
-    # Try common locations
-    local locations=(
-        "/usr/bin/bun"
-        "/usr/local/bin/bun"
-        "$HOME/.bun/bin/bun"
-        "/home/$SUDO_USER/.bun/bin/bun"
-    )
-
-    # Use which command first
-    local bun_path=$(which bun 2>/dev/null)
-    if [ -n "$bun_path" ] && [ -x "$bun_path" ]; then
-        echo "$bun_path"
-        return 0
-    fi
-
-    # Check common locations
-    for loc in "${locations[@]}"; do
-        if [ -x "$loc" ]; then
-            echo "$loc"
-            return 0
-        fi
-    done
-
-    # If not found, return empty
-    return 1
-}
-
 # Build the application
 print_status "Building application..."
 
@@ -171,10 +152,12 @@ if [[ "$OS_TYPE" == "linux" ]]; then
                     CURRENT_USER=$(whoami)
                 fi
 
-                # Find bun executable
-                BUN_PATH=$(find_bun_executable)
-                if [ -z "$BUN_PATH" ]; then
-                    print_error "Could not find bun executable. Please ensure bun is installed correctly."
+                USER_HOME=$(eval echo ~$CURRENT_USER)
+                
+                # Use the user's Bun installation
+                BUN_PATH="$USER_HOME/.bun/bin/bun"
+                if [ ! -x "$BUN_PATH" ]; then
+                    print_error "Could not find bun executable at $BUN_PATH"
                     exit 1
                 fi
                 
