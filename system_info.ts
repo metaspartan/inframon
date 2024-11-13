@@ -683,9 +683,9 @@ export async function getGpuUsage(): Promise<number> {
       if (isNVIDIAGPU) {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
-          const usage = parseFloat(output.trim());
+          const usage = parseInt(output.trim(), 10);
           if (!isNaN(usage)) {
-            return Number(usage.toFixed(1));
+            return usage; // Return the whole number directly
           }
         } catch (error) {
           console.error('Error getting NVIDIA GPU usage:', error);
