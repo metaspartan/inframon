@@ -126,12 +126,12 @@ Object.keys(CHIP_FLOPS).forEach(key => {
 async function executeCommand(command: string, asUser: boolean = false): Promise<string> {
   return new Promise((resolve, reject) => {
     // get current user
-    const user = os.userInfo().username;
+    // const user = os.userInfo().username;
     // const uid = process?.getuid?.();
-    console.log('Running command as user:', user);
-    if (asUser) {
-      command = `su - ${user} -c "${command}"`;
-    }
+    // console.log('Running command as user:', user);
+    // if (asUser) {
+    //   command = `su - ${user} -c "${command}"`;
+    // }
     const proc = spawn('sh', ['-c', command]);
     let output = '';
     let errorOutput = '';
@@ -180,7 +180,7 @@ export async function initializeGPUState() {
       console.log('NVIDIA GPU detected:', output.trim());
     } catch (error) {
       gpuState.hasNVIDIA = false;
-      console.log('No NVIDIA GPU available');
+      // console.log('No NVIDIA GPU available');
     }
 
     // Check AMD
@@ -190,7 +190,7 @@ export async function initializeGPUState() {
       console.log('AMD GPU detected:', output.trim());
     } catch (error) {
       gpuState.hasAMD = false;
-      console.log('No AMD GPU available');
+      // console.log('No AMD GPU available');
     }
   } finally {
     gpuState.initialized = true;
@@ -716,7 +716,7 @@ export async function getGpuUsage(): Promise<number> {
         try {
           const output = await executeCommand('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits');
           const usage = parseInt(output.trim(), 10);
-          console.log('NVIDIA GPU usage', usage);
+          // console.log('NVIDIA GPU usage', usage);
           if (!isNaN(usage)) {
             return usage; // Return the whole number directly
           }
