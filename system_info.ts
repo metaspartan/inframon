@@ -522,17 +522,29 @@ export async function getUsedMemory(): Promise<number> {
       });
 
       // Calculate used memory (active + wired + compressed + speculative + throttled)
-      const used = (
-        (pages['active'] || 0) + 
-        (pages['wired down'] || 0) + 
-        (pages['occupied by compressor'] || 0) +
-        (pages['File-backed'] || 0) +
-        (pages['Anonymous'] || 0) +
-        (pages['speculative'] || 0) + 
-        (pages['throttled'] || 0)
-      ) * pageSize;
+      // const used = (
+      //   (pages['active'] || 0) + 
+      //   (pages['wired down'] || 0) + 
+      //   (pages['occupied by compressor'] || 0) +
+      //   (pages['File-backed'] || 0) +
+      //   (pages['Anonymous'] || 0) +
+      //   (pages['speculative'] || 0) + 
+      //   (pages['throttled'] || 0)
+      // ) * pageSize;
 
-      return used / (1024 * 1024 * 1024); // Convert to GB
+      // return used / (1024 * 1024 * 1024); // Convert to GB
+      // Get total memory
+      const totalMemory = parseInt(await executeCommand("sysctl -n hw.memsize"), 10);
+      const totalPages = totalMemory / pageSize;
+
+      // Calculate available pages (free + inactive)
+      const availablePages = (pages['free'] || 0) + (pages['inactive'] || 0);
+      
+      // Calculate used pages (total - available)
+      const usedPages = totalPages - availablePages;
+      
+      // Convert to GB
+      return (usedPages * pageSize) / (1024 * 1024 * 1024);
     } catch (error) {
       console.error('Error getting used memory:', error);
       return 0;
